@@ -111,7 +111,7 @@ namespace Jigupa.Core
             
             // Game Title
             var titleText = CreateText(topSection.transform, "GameTitle", "嘰咕帕",
-                new Vector2(0.5f, 0.7f), new Vector2(400, 80), 40, FontWeight.Light);
+                new Vector2(0.5f, 0.7f), new Vector2(500, 100), 56, FontWeight.Light);
             titleText.GetComponent<TextMeshProUGUI>().color = offBlack;
             
             // Score Pills
@@ -120,13 +120,13 @@ namespace Jigupa.Core
             RectTransform scoreRect = scoreContainer.AddComponent<RectTransform>();
             scoreRect.anchorMin = new Vector2(0.5f, 0.2f);
             scoreRect.anchorMax = new Vector2(0.5f, 0.2f);
-            scoreRect.sizeDelta = new Vector2(300, 48);
+            scoreRect.sizeDelta = new Vector2(360, 64);
             scoreRect.anchoredPosition = Vector2.zero;
             
             GameObject scorePill = CreatePill(scoreContainer.transform, "ScorePill",
-                Vector2.zero, new Vector2(300, 48));
+                Vector2.zero, new Vector2(360, 64));
             var scoreText = CreateText(scorePill.transform, "RoundScoreText", "You 0 • AI 0",
-                new Vector2(0.5f, 0.5f), new Vector2(280, 48), 18, FontWeight.Medium);
+                new Vector2(0.5f, 0.5f), new Vector2(340, 64), 24, FontWeight.Medium);
             scoreText.GetComponent<TextMeshProUGUI>().color = darkGray;
             
             // Main Game Area
@@ -137,14 +137,14 @@ namespace Jigupa.Core
             
             // State Display Card
             GameObject stateCard = CreateCard(mainArea.transform, "StateCard",
-                new Vector2(0.5f, 0.9f), new Vector2(800, 120));
+                new Vector2(0.5f, 0.9f), new Vector2(900, 160));
             
             var stateText = CreateText(stateCard.transform, "StateText", "Press Start",
-                new Vector2(0.5f, 0.6f), new Vector2(700, 60), 24, FontWeight.SemiBold);
+                new Vector2(0.5f, 0.6f), new Vector2(800, 80), 32, FontWeight.SemiBold);
             stateText.GetComponent<TextMeshProUGUI>().color = offBlack;
             
             var timerText = CreateText(stateCard.transform, "TimerText", "",
-                new Vector2(0.5f, 0.2f), new Vector2(200, 40), 14, FontWeight.Regular);
+                new Vector2(0.5f, 0.2f), new Vector2(300, 50), 20, FontWeight.Regular);
             timerText.GetComponent<TextMeshProUGUI>().color = primaryRed;
             
             // Hands Display Grid
@@ -175,7 +175,7 @@ namespace Jigupa.Core
             
             // Start Button
             GameObject startButton = CreatePrimaryButton(canvas.transform, "StartButton", "START GAME",
-                new Vector2(0.5f, 0.5f), new Vector2(320, 64));
+                new Vector2(0.5f, 0.5f), new Vector2(400, 80));
             
             // Game Over Modal
             GameObject gameOverModal = CreateGameOverModal(canvas.transform);
@@ -204,7 +204,7 @@ namespace Jigupa.Core
             
             // Label
             var labelText = CreateText(section.transform, "Label", label,
-                new Vector2(0.5f, 0.85f), new Vector2(200, 30), 14, FontWeight.Medium);
+                new Vector2(0.5f, 0.85f), new Vector2(250, 40), 18, FontWeight.Medium);
             labelText.GetComponent<TextMeshProUGUI>().color = accentColor;
             
             // Hand Cards Container
@@ -213,7 +213,7 @@ namespace Jigupa.Core
             RectTransform containerRect = handContainer.AddComponent<RectTransform>();
             containerRect.anchorMin = new Vector2(0.5f, 0.35f);
             containerRect.anchorMax = new Vector2(0.5f, 0.35f);
-            containerRect.sizeDelta = new Vector2(400, 100);
+            containerRect.sizeDelta = new Vector2(500, 120);
             containerRect.anchoredPosition = Vector2.zero;
             
             // Left Hand Card
@@ -229,16 +229,16 @@ namespace Jigupa.Core
         
         private GameObject CreateHandCard(Transform parent, string name, Vector2 anchorPos, string label)
         {
-            GameObject card = CreateCard(parent, name, anchorPos, new Vector2(160, 100));
+            GameObject card = CreateCard(parent, name, anchorPos, new Vector2(200, 120));
             
             // Label
             var labelText = CreateText(card.transform, "Label", label,
-                new Vector2(0.5f, 0.8f), new Vector2(100, 20), 12, FontWeight.Regular);
+                new Vector2(0.5f, 0.8f), new Vector2(120, 30), 16, FontWeight.Regular);
             labelText.GetComponent<TextMeshProUGUI>().color = mediumGray;
             
             // Hand Icon
             var handIcon = CreateText(card.transform, "HandIcon", "✊ ✋ ✌️",
-                new Vector2(0.5f, 0.35f), new Vector2(140, 60), 32, FontWeight.Regular);
+                new Vector2(0.5f, 0.35f), new Vector2(180, 80), 40, FontWeight.Regular);
             handIcon.GetComponent<TextMeshProUGUI>().color = offBlack;
             
             return card;
@@ -262,7 +262,7 @@ namespace Jigupa.Core
             
             // Content Card
             GameObject content = CreateCard(overlay.transform, "Content",
-                new Vector2(0.5f, 0.5f), new Vector2(600, 320));
+                new Vector2(0.5f, 0.5f), new Vector2(720, 400));
             content.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.98f);
             
             // Add red accent border
@@ -272,12 +272,12 @@ namespace Jigupa.Core
             
             // Warning Icon
             var warningIcon = CreateText(content.transform, "WarningIcon", "⚡",
-                new Vector2(0.5f, 0.85f), new Vector2(80, 80), 48, FontWeight.Light);
+                new Vector2(0.5f, 0.85f), new Vector2(100, 100), 64, FontWeight.Light);
             warningIcon.GetComponent<TextMeshProUGUI>().color = primaryRed;
             
             // Title
             var title = CreateText(content.transform, "Title", "INCOMING ATTACK",
-                new Vector2(0.5f, 0.65f), new Vector2(400, 40), 18, FontWeight.SemiBold);
+                new Vector2(0.5f, 0.65f), new Vector2(500, 60), 24, FontWeight.SemiBold);
             title.GetComponent<TextMeshProUGUI>().color = primaryRed;
             
             // Attack Gestures Container
@@ -286,7 +286,7 @@ namespace Jigupa.Core
             RectTransform gesturesRect = gesturesContainer.AddComponent<RectTransform>();
             gesturesRect.anchorMin = new Vector2(0.5f, 0.25f);
             gesturesRect.anchorMax = new Vector2(0.5f, 0.25f);
-            gesturesRect.sizeDelta = new Vector2(400, 120);
+            gesturesRect.sizeDelta = new Vector2(500, 150);
             gesturesRect.anchoredPosition = Vector2.zero;
             
             // Left Gesture
@@ -307,12 +307,12 @@ namespace Jigupa.Core
             RectTransform rect = gesture.AddComponent<RectTransform>();
             rect.anchorMin = anchorPos;
             rect.anchorMax = anchorPos;
-            rect.sizeDelta = new Vector2(120, 120);
+            rect.sizeDelta = new Vector2(150, 150);
             rect.anchoredPosition = Vector2.zero;
             
             // Gesture Text
             var gestureText = CreateText(gesture.transform, "GestureText", "",
-                new Vector2(0.5f, 0.5f), new Vector2(120, 120), 56, FontWeight.Light);
+                new Vector2(0.5f, 0.5f), new Vector2(150, 150), 72, FontWeight.Light);
             gestureText.GetComponent<TextMeshProUGUI>().color = offBlack;
         }
         
@@ -334,25 +334,25 @@ namespace Jigupa.Core
             
             // Content
             GameObject content = CreateCard(modal.transform, "Content",
-                new Vector2(0.5f, 0.5f), new Vector2(560, 400));
+                new Vector2(0.5f, 0.5f), new Vector2(640, 480));
             
             // Trophy Icon
             var trophyIcon = CreateText(content.transform, "TrophyIcon", "🏆",
-                new Vector2(0.5f, 0.75f), new Vector2(120, 120), 80, FontWeight.Light);
+                new Vector2(0.5f, 0.75f), new Vector2(140, 140), 96, FontWeight.Light);
             
             // Winner Text
             var winnerText = CreateText(content.transform, "WinnerText", "",
-                new Vector2(0.5f, 0.5f), new Vector2(400, 80), 40, FontWeight.SemiBold);
+                new Vector2(0.5f, 0.5f), new Vector2(500, 100), 48, FontWeight.SemiBold);
             winnerText.GetComponent<TextMeshProUGUI>().color = offBlack;
             
             // Final Score
             var finalScore = CreateText(content.transform, "FinalScore", "",
-                new Vector2(0.5f, 0.35f), new Vector2(300, 40), 18, FontWeight.Regular);
+                new Vector2(0.5f, 0.35f), new Vector2(400, 60), 24, FontWeight.Regular);
             finalScore.GetComponent<TextMeshProUGUI>().color = darkGray;
             
             // Play Again Button
             CreatePrimaryButton(content.transform, "PlayAgainButton", "PLAY AGAIN",
-                new Vector2(0.5f, 0.15f), new Vector2(240, 56));
+                new Vector2(0.5f, 0.15f), new Vector2(320, 72));
             
             return modal;
         }
@@ -381,7 +381,7 @@ namespace Jigupa.Core
             
             // Section Title
             var sectionTitle = CreateText(controlPanel.transform, "SectionTitle", "SELECT YOUR MOVE",
-                new Vector2(0.5f, 0.88f), new Vector2(400, 40), 14, FontWeight.Medium);
+                new Vector2(0.5f, 0.88f), new Vector2(500, 60), 18, FontWeight.Medium);
             sectionTitle.GetComponent<TextMeshProUGUI>().color = mediumGray;
             sectionTitle.GetComponent<TextMeshProUGUI>().characterSpacing = 2f;
             
@@ -415,7 +415,7 @@ namespace Jigupa.Core
             
             // Submit Button
             var submitButton = CreatePrimaryButton(controlPanel.transform, "SubmitButton", "CONFIRM",
-                new Vector2(0.5f, 0.08f), new Vector2(280, 56));
+                new Vector2(0.5f, 0.08f), new Vector2(360, 72));
             
             // Link buttons to GestureManager
             LinkGestureManager(p1Manager, true, controlPanel,
@@ -437,7 +437,7 @@ namespace Jigupa.Core
             
             // Section Label
             var labelText = CreateText(section.transform, "Label", label,
-                new Vector2(0.5f, 0.92f), new Vector2(200, 30), 12, FontWeight.Medium);
+                new Vector2(0.5f, 0.92f), new Vector2(250, 40), 16, FontWeight.Medium);
             labelText.GetComponent<TextMeshProUGUI>().color = mediumGray;
             
             // Gesture Buttons
@@ -463,7 +463,7 @@ namespace Jigupa.Core
             RectTransform rect = button.AddComponent<RectTransform>();
             rect.anchorMin = anchorPos;
             rect.anchorMax = anchorPos;
-            rect.sizeDelta = new Vector2(100, 100);
+            rect.sizeDelta = new Vector2(130, 130);
             rect.anchoredPosition = Vector2.zero;
             
             // Button component
@@ -490,11 +490,11 @@ namespace Jigupa.Core
             
             // Emoji
             var emojiText = CreateText(button.transform, "Emoji", emoji,
-                new Vector2(0.5f, 0.6f), new Vector2(80, 80), 40, FontWeight.Regular);
+                new Vector2(0.5f, 0.6f), new Vector2(100, 100), 52, FontWeight.Regular);
             
             // Label
             var labelText = CreateText(button.transform, "Label", label,
-                new Vector2(0.5f, 0.15f), new Vector2(80, 20), 12, FontWeight.Regular);
+                new Vector2(0.5f, 0.15f), new Vector2(100, 30), 16, FontWeight.Regular);
             labelText.GetComponent<TextMeshProUGUI>().color = darkGray;
             
             // Button animation
@@ -525,17 +525,17 @@ namespace Jigupa.Core
             
             // Content Card
             GameObject content = CreateCard(coinFlipModal.transform, "Content",
-                new Vector2(0.5f, 0.5f), new Vector2(700, 600));
+                new Vector2(0.5f, 0.5f), new Vector2(800, 700));
             
             // Title
             var title = CreateText(content.transform, "Title", "咕帕嘰",
-                new Vector2(0.5f, 0.85f), new Vector2(400, 60), 40, FontWeight.Light);
+                new Vector2(0.5f, 0.85f), new Vector2(500, 80), 56, FontWeight.Light);
             title.GetComponent<TextMeshProUGUI>().color = offBlack;
             
             // Subtitle
             var subtitle = CreateText(content.transform, "Subtitle", 
                 "Winner goes first • Rock-Paper-Scissors rules",
-                new Vector2(0.5f, 0.72f), new Vector2(500, 30), 14, FontWeight.Regular);
+                new Vector2(0.5f, 0.72f), new Vector2(600, 40), 18, FontWeight.Regular);
             subtitle.GetComponent<TextMeshProUGUI>().color = mediumGray;
             
             // Gesture Buttons Container
@@ -544,25 +544,25 @@ namespace Jigupa.Core
             RectTransform buttonsRect = buttonsContainer.AddComponent<RectTransform>();
             buttonsRect.anchorMin = new Vector2(0.5f, 0.45f);
             buttonsRect.anchorMax = new Vector2(0.5f, 0.45f);
-            buttonsRect.sizeDelta = new Vector2(500, 150);
+            buttonsRect.sizeDelta = new Vector2(600, 180);
             buttonsRect.anchoredPosition = Vector2.zero;
             
             // Coin flip buttons
             var flipGu = CreateMinimalGestureButton(buttonsContainer.transform,
                 "FlipGu", "✊", "Gu", new Vector2(0.2f, 0.5f));
-            flipGu.GetComponent<RectTransform>().sizeDelta = new Vector2(120, 120);
+            flipGu.GetComponent<RectTransform>().sizeDelta = new Vector2(150, 150);
             
             var flipPa = CreateMinimalGestureButton(buttonsContainer.transform,
                 "FlipPa", "✋", "Pa", new Vector2(0.5f, 0.5f));
-            flipPa.GetComponent<RectTransform>().sizeDelta = new Vector2(120, 120);
+            flipPa.GetComponent<RectTransform>().sizeDelta = new Vector2(150, 150);
             
             var flipJi = CreateMinimalGestureButton(buttonsContainer.transform,
                 "FlipJi", "✌️", "Ji", new Vector2(0.8f, 0.5f));
-            flipJi.GetComponent<RectTransform>().sizeDelta = new Vector2(120, 120);
+            flipJi.GetComponent<RectTransform>().sizeDelta = new Vector2(150, 150);
             
             // Result Text
             var resultText = CreateText(content.transform, "ResultText", "",
-                new Vector2(0.5f, 0.2f), new Vector2(600, 80), 18, FontWeight.Regular);
+                new Vector2(0.5f, 0.2f), new Vector2(680, 100), 24, FontWeight.Regular);
             resultText.GetComponent<TextMeshProUGUI>().color = darkGray;
             
             // Link to CoinFlipManager
@@ -677,7 +677,7 @@ namespace Jigupa.Core
             
             // Button text
             var buttonText = CreateText(buttonGO.transform, "Text", text,
-                new Vector2(0.5f, 0.5f), size, 16, FontWeight.Medium);
+                new Vector2(0.5f, 0.5f), size, 20, FontWeight.Medium);
             buttonText.GetComponent<TextMeshProUGUI>().color = Color.white;
             
             return buttonGO;
