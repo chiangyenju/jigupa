@@ -336,6 +336,8 @@ namespace Jigupa.Core
         private bool CheckAttackSuccess(GestureType attack, GestureType defense)
         {
             // In Jigupa, attack succeeds when it MATCHES the defense
+            // This is the opposite of rock-paper-scissors!
+            // If attacker shows Gu and defender shows Gu, the attack succeeds
             return attack == defense;
         }
 

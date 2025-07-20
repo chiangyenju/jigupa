@@ -279,7 +279,7 @@ namespace Jigupa.Core
             CreateText(coinFlipPanel.transform, "CoinFlipTitle", "咕帕嘰",
                 new Vector2(0.5f, 0.85f), new Vector2(700, 80), 42);
             
-            CreateText(coinFlipPanel.transform, "CoinFlipSubtitle", "Winner goes first!",
+            CreateText(coinFlipPanel.transform, "CoinFlipSubtitle", "Winner goes first! (Rock-Paper-Scissors rules)",
                 new Vector2(0.5f, 0.7f), new Vector2(600, 60), 32);
             
             // Coin flip buttons

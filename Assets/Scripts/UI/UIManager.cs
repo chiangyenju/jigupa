@@ -92,7 +92,7 @@ namespace Jigupa.UI
                         stateText.text = "Press Start to Begin";
                         break;
                     case GameState.CoinFlip:
-                        stateText.text = "Choose Gu, Pa, or Ji!";
+                        stateText.text = "Choose Gu, Pa, or Ji! (RPS rules for coin flip)";
                         break;
                     case GameState.AttackPhase:
                         stateText.text = $"{(isPlayer1Attacking ? "Your" : "AI's")} Attack Phase!";
