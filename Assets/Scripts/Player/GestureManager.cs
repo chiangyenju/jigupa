@@ -49,13 +49,13 @@ namespace Jigupa.Player
 
         private void SetupButtons()
         {
-            if (leftRockButton) leftRockButton.onClick.AddListener(() => SelectLeftGesture(GestureType.Rock));
-            if (leftPaperButton) leftPaperButton.onClick.AddListener(() => SelectLeftGesture(GestureType.Paper));
-            if (leftScissorsButton) leftScissorsButton.onClick.AddListener(() => SelectLeftGesture(GestureType.Scissors));
+            if (leftRockButton) leftRockButton.onClick.AddListener(() => SelectLeftGesture(GestureType.Gu));
+            if (leftPaperButton) leftPaperButton.onClick.AddListener(() => SelectLeftGesture(GestureType.Pa));
+            if (leftScissorsButton) leftScissorsButton.onClick.AddListener(() => SelectLeftGesture(GestureType.Ji));
 
-            if (rightRockButton) rightRockButton.onClick.AddListener(() => SelectRightGesture(GestureType.Rock));
-            if (rightPaperButton) rightPaperButton.onClick.AddListener(() => SelectRightGesture(GestureType.Paper));
-            if (rightScissorsButton) rightScissorsButton.onClick.AddListener(() => SelectRightGesture(GestureType.Scissors));
+            if (rightRockButton) rightRockButton.onClick.AddListener(() => SelectRightGesture(GestureType.Gu));
+            if (rightPaperButton) rightPaperButton.onClick.AddListener(() => SelectRightGesture(GestureType.Pa));
+            if (rightScissorsButton) rightScissorsButton.onClick.AddListener(() => SelectRightGesture(GestureType.Ji));
         }
 
         private void OnDestroy()
@@ -208,8 +208,8 @@ namespace Jigupa.Player
             else
             {
                 // For defense, submit what we have based on remaining hands
-                GestureType leftDef = selectedLeftGesture ?? GestureType.Rock; // Dummy if no left hand
-                GestureType rightDef = selectedRightGesture ?? GestureType.Rock; // Dummy if no right hand
+                GestureType leftDef = selectedLeftGesture ?? GestureType.Gu; // Dummy if no left hand
+                GestureType rightDef = selectedRightGesture ?? GestureType.Gu; // Dummy if no right hand
                 
                 // Make sure we have at least one selection for hands we still have
                 if ((myHand.hasLeftHand && !selectedLeftGesture.HasValue) ||

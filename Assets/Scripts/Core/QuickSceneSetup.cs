@@ -229,11 +229,11 @@ namespace Jigupa.Core
             CreateText(leftSection.transform, "LeftLabel", "LEFT HAND",
                 new Vector2(0.5f, 0.9f), new Vector2(300, 50), 28);
             
-            var p1LeftRock = CreateGestureButton(leftSection.transform, "P1LeftRock", "✊", "Rock",
+            var p1LeftRock = CreateGestureButton(leftSection.transform, "P1LeftRock", "✊", "Gu",
                 new Vector2(0.5f, 0.7f), new Vector2(150, 150));
-            var p1LeftPaper = CreateGestureButton(leftSection.transform, "P1LeftPaper", "✋", "Paper",
+            var p1LeftPaper = CreateGestureButton(leftSection.transform, "P1LeftPaper", "✋", "Pa",
                 new Vector2(0.5f, 0.45f), new Vector2(150, 150));
-            var p1LeftScissors = CreateGestureButton(leftSection.transform, "P1LeftScissors", "✌️", "Scissors",
+            var p1LeftScissors = CreateGestureButton(leftSection.transform, "P1LeftScissors", "✌️", "Ji",
                 new Vector2(0.5f, 0.2f), new Vector2(150, 150));
             
             // Right hand section
@@ -245,11 +245,11 @@ namespace Jigupa.Core
             CreateText(rightSection.transform, "RightLabel", "RIGHT HAND",
                 new Vector2(0.5f, 0.9f), new Vector2(300, 50), 28);
             
-            var p1RightRock = CreateGestureButton(rightSection.transform, "P1RightRock", "✊", "Rock",
+            var p1RightRock = CreateGestureButton(rightSection.transform, "P1RightRock", "✊", "Gu",
                 new Vector2(0.5f, 0.7f), new Vector2(150, 150));
-            var p1RightPaper = CreateGestureButton(rightSection.transform, "P1RightPaper", "✋", "Paper",
+            var p1RightPaper = CreateGestureButton(rightSection.transform, "P1RightPaper", "✋", "Pa",
                 new Vector2(0.5f, 0.45f), new Vector2(150, 150));
-            var p1RightScissors = CreateGestureButton(rightSection.transform, "P1RightScissors", "✌️", "Scissors",
+            var p1RightScissors = CreateGestureButton(rightSection.transform, "P1RightScissors", "✌️", "Ji",
                 new Vector2(0.5f, 0.2f), new Vector2(150, 150));
             
             // Submit button
@@ -276,18 +276,18 @@ namespace Jigupa.Core
             coinFlipPanel.GetComponent<Image>().color = new Color(0.1f, 0.1f, 0.2f, 0.98f);
             coinFlipPanel.SetActive(false);
             
-            CreateText(coinFlipPanel.transform, "CoinFlipTitle", "ROCK PAPER SCISSORS",
+            CreateText(coinFlipPanel.transform, "CoinFlipTitle", "GU PA JI",
                 new Vector2(0.5f, 0.85f), new Vector2(700, 80), 42);
             
             CreateText(coinFlipPanel.transform, "CoinFlipSubtitle", "Winner goes first!",
                 new Vector2(0.5f, 0.7f), new Vector2(600, 60), 32);
             
             // Coin flip buttons
-            var flipRock = CreateGestureButton(coinFlipPanel.transform, "FlipRock", "✊", "Rock",
+            var flipRock = CreateGestureButton(coinFlipPanel.transform, "FlipRock", "✊", "Gu",
                 new Vector2(0.2f, 0.45f), new Vector2(200, 200));
-            var flipPaper = CreateGestureButton(coinFlipPanel.transform, "FlipPaper", "✋", "Paper",
+            var flipPaper = CreateGestureButton(coinFlipPanel.transform, "FlipPaper", "✋", "Pa",
                 new Vector2(0.5f, 0.45f), new Vector2(200, 200));
-            var flipScissors = CreateGestureButton(coinFlipPanel.transform, "FlipScissors", "✌️", "Scissors",
+            var flipScissors = CreateGestureButton(coinFlipPanel.transform, "FlipScissors", "✌️", "Ji",
                 new Vector2(0.8f, 0.45f), new Vector2(200, 200));
             
             var resultText = CreateText(coinFlipPanel.transform, "CoinFlipResult", "",

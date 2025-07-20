@@ -18,9 +18,9 @@ namespace Jigupa.Core
 
         private void Start()
         {
-            if (rockButton) rockButton.onClick.AddListener(() => SelectGesture(GestureType.Rock));
-            if (paperButton) paperButton.onClick.AddListener(() => SelectGesture(GestureType.Paper));
-            if (scissorsButton) scissorsButton.onClick.AddListener(() => SelectGesture(GestureType.Scissors));
+            if (rockButton) rockButton.onClick.AddListener(() => SelectGesture(GestureType.Gu));
+            if (paperButton) paperButton.onClick.AddListener(() => SelectGesture(GestureType.Pa));
+            if (scissorsButton) scissorsButton.onClick.AddListener(() => SelectGesture(GestureType.Ji));
 
             if (GameStateManager.Instance)
             {
@@ -92,9 +92,9 @@ namespace Jigupa.Core
         {
             if (player == ai) return false;
 
-            return (player == GestureType.Rock && ai == GestureType.Scissors) ||
-                   (player == GestureType.Paper && ai == GestureType.Rock) ||
-                   (player == GestureType.Scissors && ai == GestureType.Paper);
+            return (player == GestureType.Gu && ai == GestureType.Ji) ||
+                   (player == GestureType.Pa && ai == GestureType.Gu) ||
+                   (player == GestureType.Ji && ai == GestureType.Pa);
         }
 
         private void ResetCoinFlip()

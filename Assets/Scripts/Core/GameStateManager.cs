@@ -17,9 +17,9 @@ namespace Jigupa.Core
 
     public enum GestureType
     {
-        Rock,    // Gu (구)
-        Paper,   // Pa (파)
-        Scissors // Ji (지)
+        Gu,    // Rock (구)
+        Pa,    // Paper (파)
+        Ji     // Scissors (지)
     }
 
     public class GameStateManager : MonoBehaviour
@@ -196,7 +196,7 @@ namespace Jigupa.Core
             Debug.Log($"Defense submitted: {leftGesture} + {rightGesture}");
             
             // Now reveal the attack!
-            OnAttackDeclared?.Invoke(attackLeftGesture ?? GestureType.Rock, attackRightGesture ?? GestureType.Rock);
+            OnAttackDeclared?.Invoke(attackLeftGesture ?? GestureType.Gu, attackRightGesture ?? GestureType.Gu);
             
             // Small delay to show attack before resolving
             Invoke(nameof(ResolveTurn), 1.5f);
@@ -390,7 +390,7 @@ namespace Jigupa.Core
             {
                 PlayerHand defender = isPlayer1Attacking ? player2 : player1;
                 // For timeout, just submit random gestures for remaining hands
-                GestureType[] gestures = { GestureType.Rock, GestureType.Paper, GestureType.Scissors };
+                GestureType[] gestures = { GestureType.Gu, GestureType.Pa, GestureType.Ji };
                 GestureType randomLeft = gestures[UnityEngine.Random.Range(0, 3)];
                 GestureType randomRight = gestures[UnityEngine.Random.Range(0, 3)];
                 SubmitDefense(randomLeft, randomRight);
@@ -462,11 +462,11 @@ namespace Jigupa.Core
             // Submit defense based on which hands AI still has
             if (!aiHand.hasLeftHand)
             {
-                leftDefense = GestureType.Rock; // Dummy value, won't be checked
+                leftDefense = GestureType.Gu; // Dummy value, won't be checked
             }
             if (!aiHand.hasRightHand)
             {
-                rightDefense = GestureType.Rock; // Dummy value, won't be checked
+                rightDefense = GestureType.Gu; // Dummy value, won't be checked
             }
             
             SubmitDefense(leftDefense, rightDefense);

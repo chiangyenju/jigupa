@@ -92,7 +92,7 @@ namespace Jigupa.UI
                         stateText.text = "Press Start to Begin";
                         break;
                     case GameState.CoinFlip:
-                        stateText.text = "Choose Rock, Paper, or Scissors!";
+                        stateText.text = "Choose Gu, Pa, or Ji!";
                         break;
                     case GameState.AttackPhase:
                         stateText.text = $"{(isPlayer1Attacking ? "Your" : "AI's")} Attack Phase!";
@@ -319,9 +319,9 @@ namespace Jigupa.UI
         {
             switch (gesture)
             {
-                case GestureType.Rock: return "Rock (구)";
-                case GestureType.Paper: return "Paper (파)";
-                case GestureType.Scissors: return "Scissors (지)";
+                case GestureType.Gu: return "Gu (구)";
+                case GestureType.Pa: return "Pa (파)";
+                case GestureType.Ji: return "Ji (지)";
                 default: return gesture.ToString();
             }
         }
@@ -330,9 +330,9 @@ namespace Jigupa.UI
         {
             switch (gesture)
             {
-                case GestureType.Rock: return "✊";
-                case GestureType.Paper: return "✋";
-                case GestureType.Scissors: return "✌️";
+                case GestureType.Gu: return "✊";
+                case GestureType.Pa: return "✋";
+                case GestureType.Ji: return "✌️";
                 default: return "?";
             }
         }

@@ -1,18 +1,18 @@
 # Jigupa - 1v1 Hand Gesture Battle Game
 
 ## Game Overview
-Jigupa is a strategic turn-based hand gesture battle game where players use Rock (Gu/구), Paper (Pa/파), and Scissors (Ji/지) to eliminate opponent's hands.
+Jigupa is a strategic turn-based hand gesture battle game where players use Gu (Rock/구), Pa (Paper/파), and Ji (Scissors/지) to eliminate opponent's hands.
 
 ## Game Rules
 
 ### Initial Setup
 - Each player starts with 2 hands (left and right)
-- Rock-Paper-Scissors determines who attacks first
+- Gu-Pa-Ji determines who attacks first
 - First to win 3 rounds wins the match
 
 ### Attack Phase
 - Attacker chooses gestures for their available hands
-- With 2 hands: Can attack with both (e.g., Rock+Paper) or choose single hand
+- With 2 hands: Can attack with both (e.g., Gu+Pa) or choose single hand
 - With 1 hand: Can only perform single-hand attack
 - Attack is hidden until defense is submitted
 
@@ -51,7 +51,7 @@ Jigupa is a strategic turn-based hand gesture battle game where players use Rock
 ## Controls
 - **Attack Phase**: Select gesture(s) for available hands, then submit
 - **Defense Phase**: Select gesture for each hand (blind), then submit
-- **UI**: Tap gesture buttons (Rock/Paper/Scissors) for each hand
+- **UI**: Tap gesture buttons (Gu/Pa/Ji) for each hand
 
 ## Build Instructions
 1. File > Build Settings
