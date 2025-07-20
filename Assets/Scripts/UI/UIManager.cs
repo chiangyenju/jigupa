@@ -293,7 +293,7 @@ namespace Jigupa.UI
             {
                 int p1Wins = GameStateManager.Instance.GetPlayer1Wins();
                 int p2Wins = GameStateManager.Instance.GetPlayer2Wins();
-                roundScoreText.text = $"You: {p1Wins} - AI: {p2Wins}";
+                roundScoreText.text = $"You {p1Wins} • AI {p2Wins}";
             }
         }
 
