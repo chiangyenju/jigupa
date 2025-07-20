@@ -1,39 +1,57 @@
 # Jigupa - 1v1 Hand Gesture Battle Game
 
 ## Game Overview
-Jigupa is an intense real-time 1v1 hand gesture battle game where players use Rock (Gu), Paper (Pa), and Scissors (Ji) in strategic combinations.
+Jigupa is a strategic turn-based hand gesture battle game where players use Rock (Gu/구), Paper (Pa/파), and Scissors (Ji/지) to eliminate opponent's hands.
 
 ## Game Rules
 
+### Initial Setup
+- Each player starts with 2 hands (left and right)
+- Rock-Paper-Scissors determines who attacks first
+- First to win 3 rounds wins the match
+
 ### Attack Phase
-- Attacker yells their move combination
-- Must choose 2 gestures: either identical (e.g., Rock+Rock) or different (e.g., Rock+Paper)
-- Voice command triggers visual display for defender
+- Attacker chooses gestures for their available hands
+- With 2 hands: Can attack with both (e.g., Rock+Paper) or choose single hand
+- With 1 hand: Can only perform single-hand attack
+- Attack is hidden until defense is submitted
 
 ### Defense Phase  
-- Defender sees attacker's gestures appear on screen
-- Must simultaneously tap two gestures to defend
-- If defender has duplicates matching attacker's gesture, they lose that hand
-- Remaining hands become defender's attack options
+- Defender must choose gestures BEFORE seeing the attack
+- Must assign a gesture to each remaining hand
+- Defense is blind - pure prediction/strategy
+
+### Resolution
+- Attack succeeds when attacker's gesture MATCHES defender's gesture
+- When matched, defender loses that entire hand (not just the gesture)
+- Single-hand attack can eliminate maximum 1 defending hand
+- Double-hand attack can eliminate both defending hands if both match
+
+### Turn Flow
+- Players alternate between attacking and defending
+- Player with no hands remaining loses the round
+- New round starts with both players having 2 hands again
 
 ### Victory Condition
-Battle continues with alternating attack/defense turns until one player has no remaining gestures.
+- First player to win 3 rounds wins the match
 
 ## Technical Features
-- **Voice Recognition**: Attack commands via voice input
-- **Real-time Display**: Instant gesture visualization
-- **Simultaneous Input**: Multi-touch defense selection
-- **Network Play**: 1v1 multiplayer support
+- **Turn-based Strategy**: Alternating attack/defense phases
+- **Blind Defense**: Must predict opponent's attack
+- **AI Opponent**: Single-player mode with strategic AI
+- **Touch Controls**: Tap to select gestures for each hand
 
 ## Development Setup
-1. Unity 2022.3 LTS or newer
-2. Install required packages (see Packages/)
+1. Unity 6.1 or newer
+2. Install TextMeshPro when prompted
 3. Open project in Unity Hub
-4. Configure build settings for iOS/Android
+4. Run QuickSceneSetup to create game scene
+5. Configure build settings for iOS/Android (optimized for iPhone 12)
 
 ## Controls
-- **Attacker**: Voice command (e.g., "Rock Paper!")
-- **Defender**: Tap two gesture buttons simultaneously
+- **Attack Phase**: Select gesture(s) for available hands, then submit
+- **Defense Phase**: Select gesture for each hand (blind), then submit
+- **UI**: Tap gesture buttons (Rock/Paper/Scissors) for each hand
 
 ## Build Instructions
 1. File > Build Settings

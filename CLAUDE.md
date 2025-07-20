@@ -9,20 +9,24 @@
 ## Project Structure
 - Assets/Scripts/Core/ - Game logic, managers
 - Assets/Scripts/Player/ - Player input, gestures
-- Assets/Scripts/Network/ - Multiplayer, voice
+- Assets/Scripts/Network/ - Multiplayer (future)
 - Assets/Scripts/UI/ - UI controllers
 - Assets/Prefabs/ - Reusable game objects
-- Assets/Audio/ - Voice recognition, SFX
+- Assets/Audio/ - Sound effects (future)
 
 ## Key Systems
-1. **GestureManager** - Handles rock/paper/scissors input
-2. **VoiceController** - Voice recognition for attacks
-3. **GameStateManager** - Turn-based logic
-4. **NetworkManager** - Real-time multiplayer
+1. **GameStateManager** - Core game flow, turn-based logic, win conditions
+2. **GestureManager** - Player input for attack/defense gestures
+3. **UIManager** - Display game state, hands, attack results
+4. **PlayerHand** - Tracks hand states (alive/eliminated)
+5. **CoinFlipManager** - Initial RPS to determine first attacker
+6. **QuickSceneSetup** - Automated UI creation for iPhone 12
 
 ## Testing
 - Play Mode tests in Unity Editor
-- Device testing for voice/gesture input
+- Test single-hand attack/defense scenarios
+- Verify UI displays correctly for all hand combinations
+- Check win conditions (3 rounds to win match)
 
 ## Build Commands
 - File > Build Settings > Android/iOS
