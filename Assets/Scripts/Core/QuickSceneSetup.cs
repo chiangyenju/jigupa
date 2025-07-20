@@ -276,7 +276,7 @@ namespace Jigupa.Core
             coinFlipPanel.GetComponent<Image>().color = new Color(0.1f, 0.1f, 0.2f, 0.98f);
             coinFlipPanel.SetActive(false);
             
-            CreateText(coinFlipPanel.transform, "CoinFlipTitle", "GU PA JI",
+            CreateText(coinFlipPanel.transform, "CoinFlipTitle", "咕帕嘰",
                 new Vector2(0.5f, 0.85f), new Vector2(700, 80), 42);
             
             CreateText(coinFlipPanel.transform, "CoinFlipSubtitle", "Winner goes first!",

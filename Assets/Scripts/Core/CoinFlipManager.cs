@@ -92,6 +92,10 @@ namespace Jigupa.Core
         {
             if (player == ai) return false;
 
+            // For coin flip, we still use traditional RPS rules
+            // Gu (Rock) beats Ji (Scissors)
+            // Pa (Paper) beats Gu (Rock)  
+            // Ji (Scissors) beats Pa (Paper)
             return (player == GestureType.Gu && ai == GestureType.Ji) ||
                    (player == GestureType.Pa && ai == GestureType.Gu) ||
                    (player == GestureType.Ji && ai == GestureType.Pa);

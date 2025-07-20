@@ -319,9 +319,9 @@ namespace Jigupa.UI
         {
             switch (gesture)
             {
-                case GestureType.Gu: return "Gu (구)";
-                case GestureType.Pa: return "Pa (파)";
-                case GestureType.Ji: return "Ji (지)";
+                case GestureType.Gu: return "Gu (咕)";
+                case GestureType.Pa: return "Pa (帕)";
+                case GestureType.Ji: return "Ji (嘰)";
                 default: return gesture.ToString();
             }
         }

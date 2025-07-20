@@ -17,9 +17,9 @@ namespace Jigupa.Core
 
     public enum GestureType
     {
-        Gu,    // Rock (구)
-        Pa,    // Paper (파)
-        Ji     // Scissors (지)
+        Gu,    // Rock (咕)
+        Pa,    // Paper (帕)
+        Ji     // Scissors (嘰)
     }
 
     public class GameStateManager : MonoBehaviour
@@ -410,7 +410,7 @@ namespace Jigupa.Core
             }
             
             // AI can use any gesture with remaining hands
-            GestureType[] gestures = { GestureType.Rock, GestureType.Paper, GestureType.Scissors };
+            GestureType[] gestures = { GestureType.Gu, GestureType.Pa, GestureType.Ji };
             
             // Check if AI can do double hand attack
             if (aiHand.HasBothHands())
@@ -439,7 +439,7 @@ namespace Jigupa.Core
             
             // AI must choose defense WITHOUT seeing the attack!
             // This is purely random/strategic
-            GestureType[] gestures = { GestureType.Rock, GestureType.Paper, GestureType.Scissors };
+            GestureType[] gestures = { GestureType.Gu, GestureType.Pa, GestureType.Ji };
             
             // AI strategy: sometimes use same gesture on both hands (risky but limits damage)
             // sometimes use different gestures (safer but can lose both)
@@ -476,7 +476,7 @@ namespace Jigupa.Core
         {
             // In Jigupa, we want to AVOID matching the attack gesture
             // So return a different gesture
-            GestureType[] gestures = { GestureType.Rock, GestureType.Paper, GestureType.Scissors };
+            GestureType[] gestures = { GestureType.Gu, GestureType.Pa, GestureType.Ji };
             GestureType avoid1 = attackGesture;
             
             // Pick a random gesture that's NOT the attack gesture
