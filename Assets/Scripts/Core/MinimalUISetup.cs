@@ -182,7 +182,10 @@ namespace Jigupa.Core
             var winnerText = gameOverModal.transform.Find("Content/WinnerText").GetComponent<TextMeshProUGUI>();
             
             // Link UI elements to UIManager
-            LinkUIManager(uiScript, stateText, timerText, scoreText, startButton,
+            LinkUIManager(uiScript, stateText.GetComponent<TextMeshProUGUI>(), 
+                timerText.GetComponent<TextMeshProUGUI>(), 
+                scoreText.GetComponent<TextMeshProUGUI>(), 
+                startButton,
                 p1LeftText, p1RightText, p2LeftText, p2RightText,
                 attackOverlay, attackLeftText, attackRightText, attackLeftLabel, attackRightLabel,
                 gameOverModal, winnerText);
@@ -380,7 +383,7 @@ namespace Jigupa.Core
             var sectionTitle = CreateText(controlPanel.transform, "SectionTitle", "SELECT YOUR MOVE",
                 new Vector2(0.5f, 0.88f), new Vector2(400, 40), 14, FontWeight.Medium);
             sectionTitle.GetComponent<TextMeshProUGUI>().color = mediumGray;
-            sectionTitle.GetComponent<TextMeshProUGUI>().letterSpacing = 2f;
+            sectionTitle.GetComponent<TextMeshProUGUI>().characterSpacing = 2f;
             
             // Hand Sections Container
             GameObject handsContainer = new GameObject("HandsContainer");
@@ -635,7 +638,7 @@ namespace Jigupa.Core
             TextMeshProUGUI tmp = textGO.AddComponent<TextMeshProUGUI>();
             tmp.text = text;
             tmp.fontSize = fontSize;
-            tmp.fontWeight = weight;
+            tmp.fontWeight = (TMPro.FontWeight)weight;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.color = offBlack;
             
