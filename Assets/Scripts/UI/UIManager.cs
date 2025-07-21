@@ -112,20 +112,7 @@ namespace Jigupa.UI
                 }
             }
 
-            // Show attack panel during defense but hide the actual gestures
-            if (newState == GameState.DefensePhase && GameStateManager.Instance.IsPlayer1Attacking())
-            {
-                if (attackDisplayPanel)
-                {
-                    attackDisplayPanel.SetActive(true);
-                    if (attackLeftText) attackLeftText.text = "???";
-                    if (attackRightText) attackRightText.text = "???";
-                }
-            }
-            else if (attackDisplayPanel && newState != GameState.ResolvingTurn)
-            {
-                attackDisplayPanel.SetActive(false);
-            }
+            // Don't use attack panel anymore - gestures are shown on the board
         }
 
         private void OnHandsUpdated(PlayerHand player1, PlayerHand player2)
@@ -142,61 +129,72 @@ namespace Jigupa.UI
 
             if (hasHand)
             {
-                textElement.text = "✊ ✋ ✌️";
-                textElement.color = Color.white;
+                // Show current stance instead of "READY"
+                if (GameStateManager.Instance != null)
+                {
+                    GestureType stance = GestureType.Gu; // Default
+                    
+                    // Determine which hand and player we're updating
+                    if (textElement == player1LeftHandText)
+                        stance = GameStateManager.Instance.GetPlayer1LeftStance();
+                    else if (textElement == player1RightHandText)
+                        stance = GameStateManager.Instance.GetPlayer1RightStance();
+                    else if (textElement == player2LeftHandText)
+                        stance = GameStateManager.Instance.GetPlayer2LeftStance();
+                    else if (textElement == player2RightHandText)
+                        stance = GameStateManager.Instance.GetPlayer2RightStance();
+                    
+                    textElement.text = GetGestureSymbol(stance);
+                    textElement.color = Color.white;
+                }
+                else
+                {
+                    textElement.text = "R"; // Default to Rock
+                    textElement.color = Color.white;
+                }
             }
             else
             {
-                textElement.text = "❌";
+                textElement.text = "OUT";
                 textElement.color = new Color(0.5f, 0.5f, 0.5f);
             }
         }
 
         private void OnAttackDeclared(GestureType leftGesture, GestureType rightGesture)
         {
-            if (attackDisplayPanel && GameStateManager.Instance)
+            if (GameStateManager.Instance)
             {
-                attackDisplayPanel.SetActive(true);
-                
-                // Check if it's a single hand attack
+                // Instead of showing attack overlay, update the hand displays to show the actual gestures
+                bool isPlayer1Attacking = GameStateManager.Instance.IsPlayer1Attacking();
                 GameStateManager.Instance.GetCurrentAttack(out var leftAttack, out var rightAttack);
                 
-                if (leftAttack.HasValue && rightAttack.HasValue)
+                if (isPlayer1Attacking)
                 {
-                    // Double hand attack - show both with labels
-                    if (attackLeftText) 
-                    {
-                        attackLeftText.text = GetGestureName(leftGesture);
-                        // Restore left position
-                        var rectTransform = attackLeftText.GetComponent<RectTransform>();
-                        rectTransform.anchorMin = new Vector2(0.25f, 0.2f);
-                        rectTransform.anchorMax = new Vector2(0.25f, 0.2f);
-                        rectTransform.anchoredPosition = Vector2.zero;
-                    }
-                    if (attackRightText) attackRightText.text = GetGestureName(rightGesture);
-                    if (attackLeftLabel) attackLeftLabel.SetActive(true);
-                    if (attackRightLabel) attackRightLabel.SetActive(true);
+                    // Player 1 is attacking - show their gestures with sword
+                    if (player1LeftHandText && leftAttack.HasValue)
+                        player1LeftHandText.text = GetGestureSymbol(leftGesture) + " ←";
+                    if (player1RightHandText && rightAttack.HasValue)
+                        player1RightHandText.text = GetGestureSymbol(rightGesture) + " ←";
+                    
+                    // Player 2 is defending - show shield with current stance
+                    if (player2LeftHandText && GameStateManager.Instance.GetPlayer2().hasLeftHand)
+                        player2LeftHandText.text = "[" + GetGestureSymbol(GameStateManager.Instance.GetPlayer2LeftStance()) + "]";
+                    if (player2RightHandText && GameStateManager.Instance.GetPlayer2().hasRightHand)
+                        player2RightHandText.text = "[" + GetGestureSymbol(GameStateManager.Instance.GetPlayer2RightStance()) + "]";
                 }
-                else if (leftAttack.HasValue || rightAttack.HasValue)
+                else
                 {
-                    // Single hand attack - show only one gesture, centered
-                    string gesture = leftAttack.HasValue ? GetGestureName(leftGesture) : GetGestureName(rightGesture);
+                    // Player 2 is attacking - show their gestures with sword
+                    if (player2LeftHandText && leftAttack.HasValue)
+                        player2LeftHandText.text = GetGestureSymbol(leftGesture) + " ←";
+                    if (player2RightHandText && rightAttack.HasValue)
+                        player2RightHandText.text = GetGestureSymbol(rightGesture) + " ←";
                     
-                    // Use left text position for single gesture display
-                    if (attackLeftText) 
-                    {
-                        attackLeftText.text = gesture;
-                        // Move to center
-                        var rectTransform = attackLeftText.GetComponent<RectTransform>();
-                        rectTransform.anchorMin = new Vector2(0.5f, 0.2f);
-                        rectTransform.anchorMax = new Vector2(0.5f, 0.2f);
-                        rectTransform.anchoredPosition = Vector2.zero;
-                    }
-                    if (attackRightText) attackRightText.text = "";
-                    
-                    // Hide labels for single attack
-                    if (attackLeftLabel) attackLeftLabel.SetActive(false);
-                    if (attackRightLabel) attackRightLabel.SetActive(false);
+                    // Player 1 is defending - show shield with current stance
+                    if (player1LeftHandText && GameStateManager.Instance.GetPlayer1().hasLeftHand)
+                        player1LeftHandText.text = "[" + GetGestureSymbol(GameStateManager.Instance.GetPlayer1LeftStance()) + "]";
+                    if (player1RightHandText && GameStateManager.Instance.GetPlayer1().hasRightHand)
+                        player1RightHandText.text = "[" + GetGestureSymbol(GameStateManager.Instance.GetPlayer1RightStance()) + "]";
                 }
             }
         }
@@ -221,35 +219,41 @@ namespace Jigupa.UI
                         // Player attacked, show AI's defense
                         resultText = "AI defended with: ";
                         
-                        // Check AI's hand count at time of defense (before resolution)
-                        if (defenderHandCount == 2)
+                        // Show defense results on the board
+                        var leftDef = GameStateManager.Instance.GetLastDefenseLeft();
+                        var rightDef = GameStateManager.Instance.GetLastDefenseRight();
+                        
+                        if (leftAttack.HasValue && player2LeftHandText && player2LeftHandText.text.Contains("["))
                         {
-                            resultText += $"{GameStateManager.Instance.GetLastDefenseLeft()} + {GameStateManager.Instance.GetLastDefenseRight()}";
+                            // Just show the defense gesture - we'll determine success from elimination
+                            player2LeftHandText.text = GetGestureSymbol(leftDef);
+                            player2LeftHandText.color = Color.white;
                         }
-                        else if (defenderHandCount == 1)
+                        if (rightAttack.HasValue && player2RightHandText && player2RightHandText.text.Contains("["))
                         {
-                            // Single hand defense - show only the gesture used
-                            resultText += $"{GameStateManager.Instance.GetLastDefenseGesture()}";
+                            // Just show the defense gesture - we'll determine success from elimination
+                            player2RightHandText.text = GetGestureSymbol(rightDef);
+                            player2RightHandText.color = Color.white;
                         }
-                        resultText += "\n";
                     }
                     else
                     {
-                        // AI attacked, show what they attacked with
-                        resultText = "AI attacked with: ";
-                        if (leftAttack.HasValue && rightAttack.HasValue)
+                        // AI attacked, show player's defense results
+                        var leftDef = GameStateManager.Instance.GetLastDefenseLeft();
+                        var rightDef = GameStateManager.Instance.GetLastDefenseRight();
+                        
+                        if (leftAttack.HasValue && player1LeftHandText && player1LeftHandText.text.Contains("["))
                         {
-                            resultText += $"{leftAttack.Value} + {rightAttack.Value}";
+                            // Just show the defense gesture - we'll determine success from elimination
+                            player1LeftHandText.text = GetGestureSymbol(leftDef);
+                            player1LeftHandText.color = Color.white;
                         }
-                        else if (leftAttack.HasValue)
+                        if (rightAttack.HasValue && player1RightHandText && player1RightHandText.text.Contains("["))
                         {
-                            resultText += $"{leftAttack.Value}";
+                            // Just show the defense gesture - we'll determine success from elimination
+                            player1RightHandText.text = GetGestureSymbol(rightDef);
+                            player1RightHandText.color = Color.white;
                         }
-                        else if (rightAttack.HasValue)
-                        {
-                            resultText += $"{rightAttack.Value}";
-                        }
-                        resultText += "\n";
                     }
                 }
                 
@@ -293,7 +297,7 @@ namespace Jigupa.UI
             {
                 int p1Wins = GameStateManager.Instance.GetPlayer1Wins();
                 int p2Wins = GameStateManager.Instance.GetPlayer2Wins();
-                roundScoreText.text = $"You {p1Wins} • AI {p2Wins}";
+                roundScoreText.text = $"YOU: {p1Wins}  VS  AI: {p2Wins}";
             }
         }
 
@@ -319,9 +323,9 @@ namespace Jigupa.UI
         {
             switch (gesture)
             {
-                case GestureType.Gu: return "Gu (咕)";
-                case GestureType.Pa: return "Pa (帕)";
-                case GestureType.Ji: return "Ji (嘰)";
+                case GestureType.Gu: return "ROCK";
+                case GestureType.Pa: return "PAPER";
+                case GestureType.Ji: return "SCISSORS";
                 default: return gesture.ToString();
             }
         }
@@ -330,9 +334,9 @@ namespace Jigupa.UI
         {
             switch (gesture)
             {
-                case GestureType.Gu: return "✊";
-                case GestureType.Pa: return "✋";
-                case GestureType.Ji: return "✌️";
+                case GestureType.Gu: return "R";  // Rock
+                case GestureType.Pa: return "P";  // Paper
+                case GestureType.Ji: return "S";  // Scissors
                 default: return "?";
             }
         }

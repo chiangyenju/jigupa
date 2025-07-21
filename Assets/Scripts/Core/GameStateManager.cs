@@ -46,6 +46,12 @@ namespace Jigupa.Core
         [SerializeField] private int successfulHits = 0;
         [SerializeField] private bool isSingleHandAttack = false;
         [SerializeField] private int defenderHandCountBeforeAttack = 2;
+        
+        [Header("Current Stance")]
+        [SerializeField] private GestureType player1LeftStance = GestureType.Gu;
+        [SerializeField] private GestureType player1RightStance = GestureType.Gu;
+        [SerializeField] private GestureType player2LeftStance = GestureType.Gu;
+        [SerializeField] private GestureType player2RightStance = GestureType.Gu;
 
         [Header("AI Settings")]
         [SerializeField] private bool isVsAI = true;
@@ -136,6 +142,18 @@ namespace Jigupa.Core
             isSingleHandAttack = false;
             defenseSubmitted = false;
             
+            // Update attacker's stance
+            if (isPlayer1Attacking)
+            {
+                player1LeftStance = leftGesture;
+                player1RightStance = rightGesture;
+            }
+            else
+            {
+                player2LeftStance = leftGesture;
+                player2RightStance = rightGesture;
+            }
+            
             Debug.Log($"Double hand attack declared: {leftGesture} + {rightGesture}");
             
             ChangeState(GameState.DefensePhase);
@@ -170,6 +188,22 @@ namespace Jigupa.Core
             isSingleHandAttack = true;
             defenseSubmitted = false;
             
+            // Update attacker's stance for the attacking hand
+            if (isPlayer1Attacking)
+            {
+                if (useLeftHand)
+                    player1LeftStance = gesture;
+                else
+                    player1RightStance = gesture;
+            }
+            else
+            {
+                if (useLeftHand)
+                    player2LeftStance = gesture;
+                else
+                    player2RightStance = gesture;
+            }
+            
             Debug.Log($"Single hand attack declared: {gesture} (using {(useLeftHand ? "left" : "right")} hand)");
             
             ChangeState(GameState.DefensePhase);
@@ -183,23 +217,59 @@ namespace Jigupa.Core
 
         public void SubmitDefense(GestureType leftGesture, GestureType rightGesture)
         {
-            if (currentState != GameState.DefensePhase || defenseSubmitted) return;
+            if (currentState != GameState.DefensePhase) return;
             
             defenseLeftGesture = leftGesture;
             defenseRightGesture = rightGesture;
-            defenseSubmitted = true;
             
-            // Store defender's hand count before attack resolution
+            // Update defender's stance immediately
             PlayerHand defender = isPlayer1Attacking ? player2 : player1;
             defenderHandCountBeforeAttack = defender.GetHandCount();
             
-            Debug.Log($"Defense submitted: {leftGesture} + {rightGesture}");
+            if (isPlayer1Attacking)
+            {
+                // Player 2 is defending
+                if (defender.hasLeftHand)
+                    player2LeftStance = leftGesture;
+                if (defender.hasRightHand)
+                    player2RightStance = rightGesture;
+            }
+            else
+            {
+                // Player 1 is defending
+                if (defender.hasLeftHand)
+                    player1LeftStance = leftGesture;
+                if (defender.hasRightHand)
+                    player1RightStance = rightGesture;
+            }
             
-            // Now reveal the attack!
-            OnAttackDeclared?.Invoke(attackLeftGesture ?? GestureType.Gu, attackRightGesture ?? GestureType.Gu);
+            // If not submitted yet, reveal attack and give 0.3 second window
+            if (!defenseSubmitted)
+            {
+                Debug.Log($"Defense stance set: {leftGesture} + {rightGesture}. Attack revealing...");
+                
+                // Reveal the attack!
+                OnAttackDeclared?.Invoke(attackLeftGesture ?? GestureType.Gu, attackRightGesture ?? GestureType.Gu);
+                
+                // Give 0.3 second reaction window
+                Invoke(nameof(FinalizeDefense), 0.3f);
+            }
+            else
+            {
+                // Defense can still be changed during the reaction window
+                Debug.Log($"Defense changed to: {leftGesture} + {rightGesture}");
+            }
+        }
+        
+        private void FinalizeDefense()
+        {
+            if (defenseSubmitted) return;
             
-            // Small delay to show attack before resolving
-            Invoke(nameof(ResolveTurn), 1.5f);
+            defenseSubmitted = true;
+            Debug.Log($"Defense finalized: {defenseLeftGesture} + {defenseRightGesture}");
+            
+            // Proceed to resolution
+            Invoke(nameof(ResolveTurn), 1.2f);
         }
 
         private void ResolveTurn()
@@ -210,120 +280,103 @@ namespace Jigupa.Core
             PlayerHand defender = isPlayer1Attacking ? player2 : player1;
             successfulHits = 0;
 
-            if (isSingleHandAttack)
+            // Position-independent matching logic
+            bool leftDefenseMatched = false;
+            bool rightDefenseMatched = false;
+            
+            // Check if left attack matches any defense
+            if (attackLeftGesture.HasValue)
             {
-                // Single hand attack - can only eliminate one defending hand
-                GestureType attackGesture = attackLeftGesture ?? attackRightGesture.Value;
-                
-                // For single hand defense - if defender only has one hand, check if attack matches their defense
-                if (defender.GetHandCount() == 1)
+                if (defender.hasLeftHand && CheckAttackSuccess(attackLeftGesture.Value, defenseLeftGesture))
                 {
-                    // Defender chose one gesture to defend with their remaining hand
-                    GestureType defenseGesture = defender.hasLeftHand ? defenseLeftGesture : defenseRightGesture;
-                    
-                    if (CheckAttackSuccess(attackGesture, defenseGesture))
+                    leftDefenseMatched = true;
+                }
+                if (defender.hasRightHand && CheckAttackSuccess(attackLeftGesture.Value, defenseRightGesture))
+                {
+                    rightDefenseMatched = true;
+                }
+            }
+            
+            // Check if right attack matches any defense
+            if (attackRightGesture.HasValue)
+            {
+                if (defender.hasLeftHand && !leftDefenseMatched && CheckAttackSuccess(attackRightGesture.Value, defenseLeftGesture))
+                {
+                    leftDefenseMatched = true;
+                }
+                if (defender.hasRightHand && !rightDefenseMatched && CheckAttackSuccess(attackRightGesture.Value, defenseRightGesture))
+                {
+                    rightDefenseMatched = true;
+                }
+            }
+            
+            // Apply damage based on matches
+            if (leftDefenseMatched && rightDefenseMatched)
+            {
+                // Both hands matched - use cross-elimination rule
+                // Attacker's left eliminates defender's right (facing each other)
+                // Attacker's right eliminates defender's left (facing each other)
+                
+                // But if it's a single hand attack, only eliminate one
+                if (isSingleHandAttack)
+                {
+                    // Eliminate the first matched hand
+                    if (defender.hasLeftHand)
                     {
-                        // Attack matches defense - eliminate the last hand
-                        if (defender.hasLeftHand)
-                        {
-                            defender.LoseHand(true);
-                            Debug.Log($"Single hand attack eliminates defender's last (left) hand! {attackGesture} matches {defenseGesture}");
-                        }
-                        else
-                        {
-                            defender.LoseHand(false);
-                            Debug.Log($"Single hand attack eliminates defender's last (right) hand! {attackGesture} matches {defenseGesture}");
-                        }
+                        defender.LoseHand(true);
                         successfulHits = 1;
-                    }
-                    else
-                    {
-                        Debug.Log($"Defense successful! {defenseGesture} doesn't match {attackGesture}");
+                        Debug.Log($"Single hand attack eliminates defender's left hand (both matched)!");
                     }
                 }
                 else
                 {
-                    // Normal two-hand defense
-                    bool beatsLeft = defender.hasLeftHand && CheckAttackSuccess(attackGesture, defenseLeftGesture);
-                    bool beatsRight = defender.hasRightHand && CheckAttackSuccess(attackGesture, defenseRightGesture);
+                    // Double hand attack - determine which hands to eliminate
+                    bool eliminateDefenderLeft = false;
+                    bool eliminateDefenderRight = false;
                     
-                    // For single hand attack against two hands, can only eliminate one
-                    if (beatsLeft && beatsRight)
+                    // If attacker's left matches defender's right
+                    if (attackLeftGesture.HasValue && defender.hasRightHand && 
+                        CheckAttackSuccess(attackLeftGesture.Value, defenseRightGesture))
                     {
-                        // Choose left hand first by convention
-                        defender.LoseHand(true);
-                        successfulHits = 1;
-                        Debug.Log($"Single hand attack eliminates defender's left hand! {attackGesture} matches {defenseLeftGesture}");
+                        eliminateDefenderRight = true;
                     }
-                    else if (beatsLeft)
+                    
+                    // If attacker's right matches defender's left
+                    if (attackRightGesture.HasValue && defender.hasLeftHand && 
+                        CheckAttackSuccess(attackRightGesture.Value, defenseLeftGesture))
+                    {
+                        eliminateDefenderLeft = true;
+                    }
+                    
+                    // Apply eliminations
+                    if (eliminateDefenderLeft && defender.hasLeftHand)
                     {
                         defender.LoseHand(true);
-                        successfulHits = 1;
-                        Debug.Log($"Single hand attack eliminates defender's left hand! {attackGesture} matches {defenseLeftGesture}");
+                        successfulHits++;
+                        Debug.Log($"Attacker's right eliminates defender's left hand!");
                     }
-                    else if (beatsRight)
+                    if (eliminateDefenderRight && defender.hasRightHand)
                     {
                         defender.LoseHand(false);
-                        successfulHits = 1;
-                        Debug.Log($"Single hand attack eliminates defender's right hand! {attackGesture} matches {defenseRightGesture}");
+                        successfulHits++;
+                        Debug.Log($"Attacker's left eliminates defender's right hand!");
                     }
                 }
             }
             else
             {
-                // Double hand attack
-                if (defender.GetHandCount() == 1)
+                // Normal elimination - any match eliminates that hand
+                if (leftDefenseMatched && defender.hasLeftHand)
                 {
-                    // Defender has only one hand - check if either attack matches their single defense
-                    GestureType defenseGesture = defender.hasLeftHand ? defenseLeftGesture : defenseRightGesture;
-                    
-                    bool leftAttackHits = attackLeftGesture.HasValue && CheckAttackSuccess(attackLeftGesture.Value, defenseGesture);
-                    bool rightAttackHits = attackRightGesture.HasValue && CheckAttackSuccess(attackRightGesture.Value, defenseGesture);
-                    
-                    if (leftAttackHits || rightAttackHits)
-                    {
-                        // Either attack hand matches the defense - eliminate the last hand
-                        if (defender.hasLeftHand)
-                        {
-                            defender.LoseHand(true);
-                            Debug.Log($"Attack eliminates defender's last (left) hand! {(leftAttackHits ? attackLeftGesture : attackRightGesture)} matches {defenseGesture}");
-                        }
-                        else
-                        {
-                            defender.LoseHand(false);
-                            Debug.Log($"Attack eliminates defender's last (right) hand! {(leftAttackHits ? attackLeftGesture : attackRightGesture)} matches {defenseGesture}");
-                        }
-                        successfulHits = 1;
-                    }
-                    else
-                    {
-                        Debug.Log($"Defense successful! {defenseGesture} doesn't match either attack");
-                    }
+                    defender.LoseHand(true);
+                    successfulHits++;
+                    Debug.Log($"Attack eliminates defender's left hand!");
                 }
-                else
+                if (rightDefenseMatched && defender.hasRightHand)
                 {
-                    // Normal two-hand vs two-hand
-                    if (attackLeftGesture.HasValue && defender.hasLeftHand)
-                    {
-                        bool leftHit = CheckAttackSuccess(attackLeftGesture.Value, defenseLeftGesture);
-                        if (leftHit)
-                        {
-                            defender.LoseHand(true);
-                            successfulHits++;
-                            Debug.Log($"Attack eliminates defender's left hand! {attackLeftGesture} matches {defenseLeftGesture}");
-                        }
-                    }
-
-                    if (attackRightGesture.HasValue && defender.hasRightHand)
-                    {
-                        bool rightHit = CheckAttackSuccess(attackRightGesture.Value, defenseRightGesture);
-                        if (rightHit)
-                        {
-                            defender.LoseHand(false);
-                            successfulHits++;
-                            Debug.Log($"Attack eliminates defender's right hand! {attackRightGesture} matches {defenseRightGesture}");
-                        }
-                    }
+                    defender.LoseHand(false);
+                    successfulHits++;
+                    Debug.Log($"Attack eliminates defender's right hand!");
                 }
             }
 
@@ -384,18 +437,30 @@ namespace Jigupa.Core
         {
             if (currentState == GameState.AttackPhase)
             {
-                GestureType randomLeft = (GestureType)UnityEngine.Random.Range(0, 3);
-                GestureType randomRight = (GestureType)UnityEngine.Random.Range(0, 3);
-                SubmitAttack(randomLeft, randomRight);
+                // Use current stance for timeout attack
+                PlayerHand attacker = isPlayer1Attacking ? player1 : player2;
+                GestureType leftStance = isPlayer1Attacking ? player1LeftStance : player2LeftStance;
+                GestureType rightStance = isPlayer1Attacking ? player1RightStance : player2RightStance;
+                
+                if (attacker.HasBothHands())
+                {
+                    SubmitAttack(leftStance, rightStance);
+                }
+                else if (attacker.hasLeftHand)
+                {
+                    SubmitSingleHandAttack(true, leftStance);
+                }
+                else if (attacker.hasRightHand)
+                {
+                    SubmitSingleHandAttack(false, rightStance);
+                }
             }
             else if (currentState == GameState.DefensePhase && !defenseSubmitted)
             {
-                PlayerHand defender = isPlayer1Attacking ? player2 : player1;
-                // For timeout, just submit random gestures for remaining hands
-                GestureType[] gestures = { GestureType.Gu, GestureType.Pa, GestureType.Ji };
-                GestureType randomLeft = gestures[UnityEngine.Random.Range(0, 3)];
-                GestureType randomRight = gestures[UnityEngine.Random.Range(0, 3)];
-                SubmitDefense(randomLeft, randomRight);
+                // Use current stance for timeout defense
+                GestureType leftStance = isPlayer1Attacking ? player2LeftStance : player1LeftStance;
+                GestureType rightStance = isPlayer1Attacking ? player2RightStance : player1RightStance;
+                SubmitDefense(leftStance, rightStance);
             }
         }
 
@@ -524,5 +589,11 @@ namespace Jigupa.Core
         }
         
         public int GetDefenderHandCountBeforeAttack() => defenderHandCountBeforeAttack;
+        
+        // Stance getters
+        public GestureType GetPlayer1LeftStance() => player1LeftStance;
+        public GestureType GetPlayer1RightStance() => player1RightStance;
+        public GestureType GetPlayer2LeftStance() => player2LeftStance;
+        public GestureType GetPlayer2RightStance() => player2RightStance;
     }
 }

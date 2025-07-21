@@ -25,6 +25,7 @@ namespace Jigupa.Core
             if (GameStateManager.Instance)
             {
                 GameStateManager.Instance.OnCoinFlipRequired += ShowCoinFlip;
+                GameStateManager.Instance.OnStateChanged += OnGameStateChanged;
             }
 
             if (coinFlipPanel) coinFlipPanel.SetActive(false);
@@ -35,6 +36,17 @@ namespace Jigupa.Core
             if (GameStateManager.Instance)
             {
                 GameStateManager.Instance.OnCoinFlipRequired -= ShowCoinFlip;
+                GameStateManager.Instance.OnStateChanged -= OnGameStateChanged;
+            }
+        }
+        
+        private void OnGameStateChanged(GameState newState)
+        {
+            // Hide the coin flip panel when we move to any state other than CoinFlip
+            if (newState != GameState.CoinFlip && coinFlipPanel && coinFlipPanel.activeSelf)
+            {
+                coinFlipPanel.SetActive(false);
+                CancelInvoke(); // Cancel any pending invokes
             }
         }
 

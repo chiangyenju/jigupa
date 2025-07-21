@@ -1,34 +1,33 @@
-# Jigupa Design System
+# Jigupa Design System - School Arena Edition
 
 ## Design Philosophy
-Minimalist, elegant, and focused on clarity. The design emphasizes the strategic nature of Jigupa through clean typography, generous whitespace, and subtle animations. Every element serves a purpose - nothing is decorative without function.
+Bold, vibrant, and energetic! Inspired by East Asian school environments where students duel in hallways and basketball courts. Large, colorful elements capture the excitement of playground battles. Every element is oversized for impact and easy interaction.
 
 ## Color Palette
 
-### Primary Colors
-- **Primary Red**: `#AC0929` - Main brand color, used for important actions and active states
-- **Primary Dark**: `#7A061D` - Darker variant for hover states
-- **Primary Light**: `#D91F42` - Lighter variant for highlights
+### Primary Colors - School Energy
+- **Hot Pink**: `#FF1E6F` - Electric energy, attack warnings
+- **School Blue**: `#0066FF` - Player color, school uniform inspired
+- **Sunset Orange**: `#FF6B35` - Opponent color, gymnasium lights
+- **Victory Gold**: `#FFD700` - Win states, trophy color
 
-### Neutral Colors
-- **Pure Black**: `#000000` - Main text on light backgrounds
-- **Off Black**: `#1A1A1A` - Softer black for large text areas
-- **Dark Gray**: `#404040` - Secondary text
-- **Medium Gray**: `#808080` - Disabled states, borders
-- **Light Gray**: `#E0E0E0` - Subtle borders, dividers
-- **Off White**: `#F8F8F8` - Background alternatives
-- **Pure White**: `#FFFFFF` - Primary background
+### Environment Colors
+- **Hallway Green**: `#00C896` - School corridor walls
+- **Court Purple**: `#8B5CF6` - Basketball court accents
+- **Chalkboard**: `#1F2937` - Dark backgrounds
+- **Notebook White**: `#FAFAFA` - Clean backgrounds
 
-### Semantic Colors
-- **Success**: `#22C55E` - Win states, successful actions
-- **Warning**: `#F59E0B` - Time warnings, important notices
-- **Info**: `#3B82F6` - Informational states
-- **Danger**: `#EF4444` - Elimination, loss states
+### UI Colors
+- **Shadow Black**: `#000000` with opacity - Depth and shadows
+- **Neon Glow**: Various colors with blur - Button highlights
+- **Pastel Blue**: `#E0F2FE` - Soft backgrounds
+- **Pastel Pink**: `#FCE7F3` - Alternate backgrounds
 
 ### Game-Specific Colors
-- **Player Blue**: `#2563EB` - Player 1 accent
-- **AI Purple**: `#7C3AED` - AI/Player 2 accent
-- **Attack Pulse**: `#AC0929` with 0.2 opacity - Attack warning overlay
+- **Player Zone**: `#0066FF` with gradients - Your side
+- **Opponent Zone**: `#FF6B35` with gradients - Their side
+- **Attack Flash**: `#FF1E6F` animated - Critical moments
+- **Defense Shield**: `#00C896` with glow - Defensive states
 
 ## Typography
 
@@ -37,15 +36,14 @@ Minimalist, elegant, and focused on clarity. The design emphasizes the strategic
 - **Fallback**: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
 - **Chinese**: "PingFang SC", "Microsoft YaHei", sans-serif
 
-### Type Scale
-- **Display**: 56px / 64px line-height / -0.02em letter-spacing
-- **Heading 1**: 40px / 48px line-height / -0.02em letter-spacing
-- **Heading 2**: 32px / 40px line-height / -0.01em letter-spacing
-- **Heading 3**: 24px / 32px line-height / 0em letter-spacing
-- **Body Large**: 18px / 28px line-height / 0em letter-spacing
-- **Body**: 16px / 24px line-height / 0em letter-spacing
-- **Body Small**: 14px / 20px line-height / 0em letter-spacing
-- **Caption**: 12px / 16px line-height / 0.01em letter-spacing
+### Type Scale - BIGGER IS BETTER!
+- **MEGA**: 120px / 140px line-height / -0.03em letter-spacing - Game title
+- **HUGE**: 96px / 112px line-height / -0.02em letter-spacing - Gestures
+- **LARGE**: 72px / 84px line-height / -0.02em letter-spacing - Scores
+- **BIG**: 56px / 64px line-height / -0.01em letter-spacing - Buttons
+- **MEDIUM**: 40px / 48px line-height / 0em letter-spacing - Labels
+- **NORMAL**: 32px / 40px line-height / 0em letter-spacing - Info text
+- **SMALL**: 24px / 32px line-height / 0em letter-spacing - Minimum size
 
 ### Font Weights
 - **Light**: 300 - Large display text only

@@ -135,6 +135,7 @@ namespace Jigupa.Player
             selectedLeftGesture = gesture;
             UpdateSubmitButton();
             Debug.Log($"Left hand selected: {gesture}");
+            CheckAutoSubmit();
         }
 
         private void SelectRightGesture(GestureType gesture)
@@ -142,6 +143,39 @@ namespace Jigupa.Player
             selectedRightGesture = gesture;
             UpdateSubmitButton();
             Debug.Log($"Right hand selected: {gesture}");
+            CheckAutoSubmit();
+        }
+        
+        private void CheckAutoSubmit()
+        {
+            // Auto-submit when both gestures are selected (or when all available hands have selections)
+            if (myHand != null)
+            {
+                bool shouldAutoSubmit = false;
+                
+                // If both hands exist and both are selected
+                if (myHand.hasLeftHand && myHand.hasRightHand && 
+                    selectedLeftGesture.HasValue && selectedRightGesture.HasValue)
+                {
+                    shouldAutoSubmit = true;
+                }
+                // If only left hand exists and it's selected
+                else if (myHand.hasLeftHand && !myHand.hasRightHand && selectedLeftGesture.HasValue)
+                {
+                    shouldAutoSubmit = true;
+                }
+                // If only right hand exists and it's selected
+                else if (!myHand.hasLeftHand && myHand.hasRightHand && selectedRightGesture.HasValue)
+                {
+                    shouldAutoSubmit = true;
+                }
+                
+                if (shouldAutoSubmit)
+                {
+                    Debug.Log("Auto-submitting gestures!");
+                    SubmitGestures();
+                }
+            }
         }
 
         private void UpdateSubmitButton()
@@ -185,24 +219,31 @@ namespace Jigupa.Player
 
             if (isAttacking)
             {
-                // Check if we have both hands for double attack
-                if (selectedLeftGesture.HasValue && selectedRightGesture.HasValue)
+                // With 2 hands, MUST attack with both
+                if (myHand.hasLeftHand && myHand.hasRightHand)
                 {
+                    // Need both gestures selected for double-hand attack
+                    if (!selectedLeftGesture.HasValue || !selectedRightGesture.HasValue)
+                    {
+                        return; // Need both hands selected
+                    }
                     GameStateManager.Instance.SubmitAttack(selectedLeftGesture.Value, selectedRightGesture.Value);
-                }
-                else if (selectedLeftGesture.HasValue)
-                {
-                    // Single left hand attack
-                    GameStateManager.Instance.SubmitSingleHandAttack(true, selectedLeftGesture.Value);
-                }
-                else if (selectedRightGesture.HasValue)
-                {
-                    // Single right hand attack
-                    GameStateManager.Instance.SubmitSingleHandAttack(false, selectedRightGesture.Value);
                 }
                 else
                 {
-                    return; // No selection
+                    // Single hand attack (only have one hand)
+                    if (selectedLeftGesture.HasValue)
+                    {
+                        GameStateManager.Instance.SubmitSingleHandAttack(true, selectedLeftGesture.Value);
+                    }
+                    else if (selectedRightGesture.HasValue)
+                    {
+                        GameStateManager.Instance.SubmitSingleHandAttack(false, selectedRightGesture.Value);
+                    }
+                    else
+                    {
+                        return; // No selection
+                    }
                 }
             }
             else

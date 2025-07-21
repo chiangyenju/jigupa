@@ -1,39 +1,83 @@
 # Jigupa - 1v1 Hand Gesture Battle Game
 
 ## Game Overview
-Jigupa (嘰咕帕) is a strategic turn-based hand gesture battle game where players use Gu (Rock/咕), Pa (Paper/帕), and Ji (Scissors/嘰) to eliminate opponent's hands.
+Jigupa (嘰咕帕) is a strategic turn-based hand gesture battle game where players use Gu (Rock/咕), Pa (Paper/帕), and Ji (Scissors/嘰) to eliminate opponent's hands. Unlike traditional rock-paper-scissors, in Jigupa you WIN by MATCHING your opponent's gesture!
 
-## Game Rules
+## Complete Game Rules
 
 ### Initial Setup
 - Each player starts with 2 hands (left and right)
-- Gu-Pa-Ji (咕帕嘰) determines who attacks first (using traditional rock-paper-scissors rules)
-- First to win 3 rounds wins the match
+- Both players begin with Gu/Gu stance (Rock on both hands)
+- A coin flip using traditional rock-paper-scissors determines who attacks first:
+  - Rock beats Scissors
+  - Paper beats Rock  
+  - Scissors beats Paper
+  - If tie, flip again
+- Match format: First to win 3 rounds wins the entire match
+
+### Persistent Stance System
+- **Your gestures persist between turns!**
+- Whatever gesture you choose (for attack or defense) becomes your new "stance"
+- Your current stance is always visible on the game board
+- If you don't select new gestures, you automatically use your current stance
+- This adds memory and prediction elements to the game
 
 ### Attack Phase
-- Attacker chooses gestures for their available hands
-- With 2 hands: Can attack with both (e.g., Gu+Pa) or choose single hand
-- With 1 hand: Can only perform single-hand attack
-- Attack is hidden until defense is submitted
+- Attacker selects gestures for their available hands
+- **With 2 hands**: Always a double-hand attack
+  - Must choose gestures for both hands
+  - Can use same gesture on both hands or different gestures
+  - Left/right position doesn't matter for matching
+- **With 1 hand**: Can only perform single-hand attack
+- Attack gestures are HIDDEN from defender until defense is submitted
+- **Auto-submit**: Attack automatically submits when you select your second gesture
+- Selected gestures become your new stance for future turns
 
 ### Defense Phase  
-- Defender must choose gestures BEFORE seeing the attack
-- Must assign a gesture to each remaining hand
-- Defense is blind - pure prediction/strategy
+- Defender can adjust their stance while waiting
+- Once attack is revealed, defender has only **0.3 seconds** to make final changes!
+- Must have a gesture for EACH remaining hand
+- **Auto-submit**: Defense automatically submits when you select gestures for all hands
+- Selected gestures become your new stance for future turns
+- **Timeout**: If time runs out, your current stance is used automatically
 
-### Resolution
+### Resolution Rules
+- **MATCHING = SUCCESS** (opposite of rock-paper-scissors!)
 - Attack succeeds when attacker's gesture MATCHES defender's gesture
-- When matched, defender loses that entire hand (not just the gesture)
-- Single-hand attack can eliminate maximum 1 defending hand
-- Double-hand attack can eliminate both defending hands if both match
+- **Position-independent matching**: Any attacking gesture can match any defending gesture
+- Examples:
+  - Attacker: Left=Gu, Right=Pa | Defender: Left=Pa, Right=Ji
+    - Attacker's Right (Pa) matches Defender's Left (Pa) → Defender loses one hand
+  - Attacker: Left=Ji, Right=Ji | Defender: Left=Ji, Right=Gu
+    - Attacker's Ji matches Defender's Ji → Defender loses one hand
+  - If BOTH defender's hands match an attacking gesture, the hand directly across is eliminated:
+    - Attacker's Left eliminates Defender's Right (they face each other)
+    - Attacker's Right eliminates Defender's Left (they face each other)
+- When matched, defender loses the ENTIRE HAND (permanently for that round)
+- **With 2 attacking hands**: Can potentially eliminate both defending hands if different gestures match
+- **With 1 attacking hand**: Can eliminate maximum 1 defending hand
 
 ### Turn Flow
-- Players alternate between attacking and defending
-- Player with no hands remaining loses the round
-- New round starts with both players having 2 hands again
+1. Coin flip determines first attacker
+2. Attack phase: Attacker chooses gestures
+3. Defense phase: Defender chooses gestures (blind)
+4. Resolution: Check for matches and eliminate hands
+5. If defender has hands remaining, roles swap
+6. Continue until one player has no hands left
+7. Round ends, winner gets 1 point
+8. New round starts with both players at 2 hands each
 
-### Victory Condition
-- First player to win 3 rounds wins the match
+### Victory Conditions
+- **Round Victory**: Eliminate all opponent's hands
+- **Match Victory**: First player to win 3 rounds
+- No draws possible - rounds continue until someone wins
+
+### Strategic Elements
+1. **Memory**: Track opponent's stance patterns
+2. **Prediction**: Guess if opponent will change or keep their stance
+3. **Bluffing**: Show patterns then break them
+4. **Risk Management**: Single vs double-hand attacks
+5. **Adaptation**: Adjust strategy based on remaining hands
 
 ## Technical Features
 - **Turn-based Strategy**: Alternating attack/defense phases
