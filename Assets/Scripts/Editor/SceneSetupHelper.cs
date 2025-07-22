@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using Jigupa.UI;
 
 namespace Jigupa.Editor
 {
@@ -24,6 +25,35 @@ namespace Jigupa.Editor
             
             // Open MainMenu as the default working scene
             EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity");
+            
+            // Setup MainMenu UI
+            SetupMainMenuUI();
+        }
+        
+        private static void SetupMainMenuUI()
+        {
+            // Find or create MainMenuUISetup
+            MainMenuUISetup menuSetup = Object.FindFirstObjectByType<MainMenuUISetup>();
+            
+            if (menuSetup == null)
+            {
+                GameObject setupObject = new GameObject("MainMenuUISetup");
+                menuSetup = setupObject.AddComponent<MainMenuUISetup>();
+            }
+            
+            // Run the setup
+            menuSetup.SetupMainMenu();
+            
+            // Clean up the setup object as it's no longer needed
+            if (Application.isPlaying == false)
+            {
+                Object.DestroyImmediate(menuSetup.gameObject);
+            }
+            
+            // Mark scene as dirty to save changes
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            
+            Debug.Log("MainMenu UI has been configured with PrimaryButton prefab!");
         }
         
         [MenuItem("Jigupa/Open MainMenu Scene")]

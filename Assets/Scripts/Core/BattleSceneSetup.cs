@@ -41,7 +41,7 @@ namespace Jigupa.Core
         
         private void AddReturnToMenuButton()
         {
-            Canvas gameCanvas = FindObjectOfType<Canvas>();
+            Canvas gameCanvas = FindFirstObjectByType<Canvas>();
             if (!gameCanvas) return;
             
             GameObject backBtn = CreateButton(gameCanvas.transform, "BackToMenuButton", "MENU",

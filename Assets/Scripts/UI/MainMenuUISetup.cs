@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Jigupa.Core;
+using System.Collections;
+using System.Linq;
 
 namespace Jigupa.UI
 {
@@ -16,11 +18,8 @@ namespace Jigupa.UI
             // Create Canvas
             Canvas canvas = CreateCanvas();
             
-            // Create main container
+            // Create main container with text menu
             CreateMainContainer(canvas);
-            
-            // Create footer navigation
-            CreateFooterNavigation(canvas);
             
             Debug.Log("Main Menu UI setup complete!");
         }
@@ -33,6 +32,36 @@ namespace Jigupa.UI
                 if (canvas.name == "MainMenuCanvas")
                 {
                     DestroyImmediate(canvas.gameObject);
+                }
+            }
+            
+            // Clean up any objects with missing scripts
+            CleanupMissingScripts();
+        }
+        
+        private void CleanupMissingScripts()
+        {
+            // Find all GameObjects in the scene
+            GameObject[] allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+            
+            foreach (GameObject obj in allObjects)
+            {
+                // Check for missing scripts and remove them
+                Component[] components = obj.GetComponents<Component>();
+                foreach (Component comp in components)
+                {
+                    if (comp == null)
+                    {
+                        Debug.Log($"Removing missing script from GameObject: {obj.name}");
+                        DestroyImmediate(comp);
+                    }
+                }
+                
+                // Specifically look for glare-related objects and remove them
+                if (obj.name == "TextGlare" || obj.name == "GlareContainer" || obj.name == "GlareMask" || obj.name == "SharedGlareContainer")
+                {
+                    Debug.Log($"Removing old glare object: {obj.name}");
+                    DestroyImmediate(obj);
                 }
             }
         }
@@ -53,7 +82,7 @@ namespace Jigupa.UI
             canvasGO.AddComponent<GraphicRaycaster>();
             
             // Create EventSystem if needed
-            var existingEventSystem = FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
+            var existingEventSystem = FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>();
             if (!existingEventSystem)
             {
                 GameObject eventSystem = new GameObject("EventSystem");
@@ -71,99 +100,138 @@ namespace Jigupa.UI
         
         private void CreateMainContainer(Canvas canvas)
         {
-            // Background
+            // Background - Ivory Cream
             GameObject bg = CreatePanel(canvas.transform, "Background",
                 new Vector2(0.5f, 0.5f), new Vector2(1170, 2532));
-            bg.GetComponent<Image>().color = new Color(0.1f, 0.1f, 0.1f, 1f);
+            bg.GetComponent<Image>().color = new Color(0.961f, 0.949f, 0.91f, 1f); // #F5F2E8
             bg.transform.SetAsFirstSibling();
             
-            // Content area (above footer)
+            // Main content area
             GameObject contentArea = CreatePanel(canvas.transform, "ContentArea",
-                new Vector2(0.5f, 0.55f), new Vector2(1170, 2100));
-            contentArea.GetComponent<Image>().color = new Color(0.15f, 0.15f, 0.15f, 1f);
+                new Vector2(0.5f, 0.5f), new Vector2(1170, 2532));
+            contentArea.GetComponent<Image>().color = new Color(0, 0, 0, 0); // Transparent
             
-            // Create content panels for each tab
-            CreatePlayerPanel(contentArea.transform);
-            CreateGuildPanel(contentArea.transform);
-            CreateBattlePanel(contentArea.transform);
-            CreateMinigamePanel(contentArea.transform);
-            CreateShopPanel(contentArea.transform);
+            // Create menu title
+            TextMeshProUGUI titleText = CreateText(contentArea.transform, "GameTitle", "JIGUPA",
+                new Vector2(0.5f, 0.85f), new Vector2(800, 200), 120);
+            titleText.color = new Color(0.674f, 0.035f, 0.161f, 1f); // Primary red
+            titleText.fontStyle = FontStyles.Bold;
+            titleText.characterSpacing = -10; // Tight spacing for title
+            FontManager.ApplyLexendFont(titleText, TMPro.FontWeight.Black);
+            
+            // Create text-based navigation menu at bottom
+            CreateTextMenu(contentArea.transform);
+            
+            // Create content panels for each tab - no background
+            GameObject panelContainer = CreatePanel(contentArea.transform, "PanelContainer",
+                new Vector2(0.5f, 0.45f), new Vector2(1000, 1200));
+            panelContainer.GetComponent<Image>().color = new Color(0, 0, 0, 0); // Transparent
+            
+            CreatePlayerPanel(panelContainer.transform);
+            CreateGuildPanel(panelContainer.transform);
+            CreateBattlePanel(panelContainer.transform);
+            CreateShopPanel(panelContainer.transform);
         }
         
-        private void CreateFooterNavigation(Canvas canvas)
+        private void CreateTextMenu(Transform parent)
         {
-            // Footer container
-            GameObject footer = CreatePanel(canvas.transform, "Footer",
-                new Vector2(0.5f, 0.05f), new Vector2(1170, 200));
-            footer.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 1f);
+            // Create vertical menu container at bottom right
+            GameObject menuContainer = CreatePanel(parent, "MenuContainer",
+                new Vector2(1f, 0f), new Vector2(300, 400));
+            menuContainer.GetComponent<Image>().color = new Color(0, 0, 0, 0); // Transparent
+            
+            // Adjust the anchor to bottom-right corner
+            RectTransform menuRect = menuContainer.GetComponent<RectTransform>();
+            menuRect.anchorMin = new Vector2(1f, 0f);
+            menuRect.anchorMax = new Vector2(1f, 0f);
+            menuRect.pivot = new Vector2(1f, 0f);
+            menuRect.anchoredPosition = new Vector2(-50, 100); // 50 pixels from right, 100 from bottom
+            
+            // We'll handle masking differently to avoid hiding the menu
+            
+            // We'll create the glare after menu items are set up
             
             // Add navigation controller
-            NavigationController navController = canvas.gameObject.AddComponent<NavigationController>();
+            NavigationController navController = parent.GetComponentInParent<Canvas>().gameObject.AddComponent<NavigationController>();
             
-            // Create footer buttons
-            float buttonWidth = 234f; // 1170 / 5
-            float xStart = 0.1f;
-            float xStep = 0.2f;
+            // Menu items - new order: Battle, Player, Guild, Shop (top to bottom)
+            string[] menuItems = { "BATTLE", "PLAYER", "GUILD", "SHOP" };
+            float spacing = 80f; // Vertical spacing
+            float startY = 150f; // Start from top
             
-            // Player button
-            GameObject playerBtn = CreateFooterButton(footer.transform, "PlayerButton", "PLAYER",
-                new Vector2(xStart, 0.5f), new Vector2(buttonWidth, 180));
+            Button[] buttons = new Button[menuItems.Length];
             
-            // Guild button
-            GameObject guildBtn = CreateFooterButton(footer.transform, "GuildButton", "GUILD",
-                new Vector2(xStart + xStep, 0.5f), new Vector2(buttonWidth, 180));
+            for (int i = 0; i < menuItems.Length; i++)
+            {
+                GameObject menuItem = new GameObject(menuItems[i] + "MenuItem");
+                menuItem.transform.SetParent(menuContainer.transform, false);
+                
+                RectTransform rect = menuItem.AddComponent<RectTransform>();
+                rect.anchorMin = new Vector2(1f, 0.5f); // Right aligned
+                rect.anchorMax = new Vector2(1f, 0.5f);
+                rect.pivot = new Vector2(1f, 0.5f); // Right pivot
+                rect.anchoredPosition = new Vector2(-20, startY - i * spacing); // 20 pixels from right edge
+                rect.sizeDelta = new Vector2(250, 80); // Size for text
+                
+                // Add button component
+                Button btn = menuItem.AddComponent<Button>();
+                buttons[i] = btn;
+                
+                // Add text with Lexend 900 weight
+                TextMeshProUGUI text = menuItem.AddComponent<TextMeshProUGUI>();
+                text.text = menuItems[i];
+                text.fontSize = 60; // Size 60 as requested
+                text.alignment = TextAlignmentOptions.Right;
+                text.fontWeight = TMPro.FontWeight.Black; // 900 weight
+                text.characterSpacing = -15; // Much tighter spacing for bold text
+                
+                // Apply Lexend font if available
+                FontManager.ApplyLexendFont(text, TMPro.FontWeight.Black);
+                
+                // Set initial color - Battle (index 0) is selected by default
+                if (i == 0) // Battle is now at index 0
+                {
+                    text.color = new Color(0.674f, 0.035f, 0.161f, 1f); // #ac0929 - Primary red
+                }
+                else
+                {
+                    text.color = new Color(0.902f, 0.224f, 0.275f, 1f); // #e63946 - Light red
+                }
+                
+                
+                // Store text component reference for navigation controller
+                int index = i;
+                btn.onClick.AddListener(() => {
+                    UpdateMenuColors(menuContainer, index);
+                });
+            }
             
-            // Battle button (center, highlighted)
-            GameObject battleBtn = CreateFooterButton(footer.transform, "BattleButton", "BATTLE",
-                new Vector2(xStart + xStep * 2, 0.5f), new Vector2(buttonWidth, 180));
-            battleBtn.GetComponent<Image>().color = new Color(0.8f, 0.2f, 0.2f, 1f);
-            
-            // Minigame button
-            GameObject minigameBtn = CreateFooterButton(footer.transform, "MinigameButton", "MINIGAME",
-                new Vector2(xStart + xStep * 3, 0.5f), new Vector2(buttonWidth, 180));
-            
-            // Shop button
-            GameObject shopBtn = CreateFooterButton(footer.transform, "ShopButton", "SHOP",
-                new Vector2(xStart + xStep * 4, 0.5f), new Vector2(buttonWidth, 180));
-            
-            // Link buttons to navigation controller
-            navController.SetupNavigation(
-                playerBtn.GetComponent<Button>(),
-                guildBtn.GetComponent<Button>(),
-                battleBtn.GetComponent<Button>(),
-                minigameBtn.GetComponent<Button>(),
-                shopBtn.GetComponent<Button>()
-            );
+            // Setup navigation controller with new order - Battle, Player, Guild, Shop
+            navController.SetupNavigation(buttons[1], buttons[2], buttons[0], buttons[3]);
         }
         
-        private GameObject CreateFooterButton(Transform parent, string name, string text,
-            Vector2 anchorPos, Vector2 size)
+        private void UpdateMenuColors(GameObject menuContainer, int selectedIndex)
         {
-            GameObject button = CreateButton(parent, name, text, anchorPos, size);
-            
-            // Style the button
-            Image img = button.GetComponent<Image>();
-            img.color = new Color(0.3f, 0.3f, 0.3f, 1f);
-            
-            // Add icon placeholder
-            GameObject icon = CreatePanel(button.transform, "Icon",
-                new Vector2(0.5f, 0.65f), new Vector2(60, 60));
-            icon.GetComponent<Image>().color = new Color(0.5f, 0.5f, 0.5f, 1f);
-            
-            // Adjust text position
-            TextMeshProUGUI btnText = button.GetComponentInChildren<TextMeshProUGUI>();
-            btnText.rectTransform.anchorMin = new Vector2(0.5f, 0.2f);
-            btnText.rectTransform.anchorMax = new Vector2(0.5f, 0.2f);
-            btnText.fontSize = 14;
-            
-            return button;
+            TextMeshProUGUI[] texts = menuContainer.GetComponentsInChildren<TextMeshProUGUI>();
+            for (int i = 0; i < texts.Length; i++)
+            {
+                if (i == selectedIndex)
+                {
+                    texts[i].color = new Color(0.674f, 0.035f, 0.161f, 1f); // Primary red
+                }
+                else
+                {
+                    texts[i].color = new Color(0.902f, 0.224f, 0.275f, 1f); // Light red
+                }
+            }
         }
+        
         
         private void CreatePlayerPanel(Transform parent)
         {
             GameObject panel = CreatePanel(parent, "PlayerPanel",
-                new Vector2(0.5f, 0.5f), new Vector2(1000, 1800));
-            panel.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 1f);
+                new Vector2(0.5f, 0.5f), new Vector2(900, 1000));
+            panel.GetComponent<Image>().color = new Color(0, 0, 0, 0); // Transparent
             panel.SetActive(false);
             
             // Title
@@ -204,8 +272,8 @@ namespace Jigupa.UI
         private void CreateGuildPanel(Transform parent)
         {
             GameObject panel = CreatePanel(parent, "GuildPanel",
-                new Vector2(0.5f, 0.5f), new Vector2(1000, 1800));
-            panel.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 1f);
+                new Vector2(0.5f, 0.5f), new Vector2(900, 1000));
+            panel.GetComponent<Image>().color = new Color(0, 0, 0, 0); // Transparent
             panel.SetActive(false);
             
             CreateText(panel.transform, "Title", "GUILD",
@@ -221,48 +289,78 @@ namespace Jigupa.UI
         private void CreateBattlePanel(Transform parent)
         {
             GameObject panel = CreatePanel(parent, "BattlePanel",
-                new Vector2(0.5f, 0.5f), new Vector2(1000, 1800));
-            panel.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 1f);
+                new Vector2(0.5f, 0.5f), new Vector2(900, 1000));
+            panel.GetComponent<Image>().color = new Color(0, 0, 0, 0); // Transparent
             panel.SetActive(true); // Battle panel active by default
             
-            CreateText(panel.transform, "Title", "BATTLE",
-                new Vector2(0.5f, 0.95f), new Vector2(800, 100), 48);
+            // No title needed - using button text instead
             
-            // Battle mode buttons
-            GameObject playBtn = CreateButton(panel.transform, "PlayJigupaButton", "PLAY JIGUPA",
-                new Vector2(0.5f, 0.7f), new Vector2(600, 150));
-            playBtn.GetComponent<Image>().color = new Color(0.2f, 0.8f, 0.2f, 1f);
+            // Battle mode buttons - Use PrimaryButton prefab
+            GameObject primaryButtonPrefab = PrefabLoader.LoadPrimaryButtonPrefab();
+            Debug.Log($"PrimaryButton prefab loaded: {primaryButtonPrefab != null}");
             
-            // Add the PlayJigupaButton component for more reliable click handling
-            playBtn.AddComponent<PlayJigupaButton>();
-            Debug.Log("PLAY JIGUPA button created with PlayJigupaButton component");
-            
-            CreateButton(panel.transform, "RankedButton", "RANKED MATCH",
-                new Vector2(0.5f, 0.5f), new Vector2(400, 100));
-            
-            CreateButton(panel.transform, "PracticeButton", "PRACTICE",
-                new Vector2(0.5f, 0.3f), new Vector2(400, 100));
-        }
-        
-        private void CreateMinigamePanel(Transform parent)
-        {
-            GameObject panel = CreatePanel(parent, "MinigamePanel",
-                new Vector2(0.5f, 0.5f), new Vector2(1000, 1800));
-            panel.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 1f);
-            panel.SetActive(false);
-            
-            CreateText(panel.transform, "Title", "MINIGAMES",
-                new Vector2(0.5f, 0.95f), new Vector2(800, 100), 48);
-            
-            CreateText(panel.transform, "ComingSoon", "Coming Soon!",
-                new Vector2(0.5f, 0.5f), new Vector2(800, 100), 32);
+            if (primaryButtonPrefab != null)
+            {
+                GameObject playBtn = GameObject.Instantiate(primaryButtonPrefab, panel.transform);
+                playBtn.name = "PlayJigupaButton";
+                
+                // Position and size the button - centered in panel
+                RectTransform rect = playBtn.GetComponent<RectTransform>();
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = Vector2.zero;
+                rect.sizeDelta = new Vector2(400, 120); // Larger button
+                
+                // Immediately try to set text
+                TextMeshProUGUI immediateText = playBtn.GetComponentInChildren<TextMeshProUGUI>();
+                if (immediateText != null)
+                {
+                    immediateText.text = "BATTLE";
+                    Debug.Log($"Immediately set text to: '{immediateText.text}'");
+                }
+                
+                // Check components
+                PrimaryButton primaryBtn = playBtn.GetComponent<PrimaryButton>();
+                Image buttonImage = playBtn.GetComponent<Image>();
+                Debug.Log($"PrimaryButton component: {primaryBtn != null}, Image color: {buttonImage?.color}");
+                
+                // Also set button text after delay
+                StartCoroutine(SetButtonTextDelayed(playBtn, "BATTLE"));
+                
+                // Button now uses text-based design with border
+                
+                // Add the PlayJigupaButton component for scene loading
+                playBtn.AddComponent<PlayJigupaButton>();
+                Debug.Log("BATTLE button created with PrimaryButton prefab");
+            }
+            else
+            {
+                // Fallback to old method if prefab not found
+                GameObject playBtn = CreateButton(panel.transform, "PlayJigupaButton", "BATTLE",
+                    new Vector2(0.5f, 0.5f), new Vector2(400, 120));
+                Image btnImage = playBtn.GetComponent<Image>();
+                btnImage.color = new Color(0.674f, 0.035f, 0.161f, 1f); // #ac0929
+                
+                // Style the button text
+                TextMeshProUGUI btnText = playBtn.GetComponentInChildren<TextMeshProUGUI>();
+                if (btnText != null)
+                {
+                    btnText.fontSize = 48;
+                    btnText.fontWeight = TMPro.FontWeight.Black;
+                    btnText.characterSpacing = -10;
+                    FontManager.ApplyLexendFont(btnText, TMPro.FontWeight.Black);
+                }
+                
+                playBtn.AddComponent<PlayJigupaButton>();
+                Debug.LogWarning("PrimaryButton prefab not found, using fallback button creation");
+            }
         }
         
         private void CreateShopPanel(Transform parent)
         {
             GameObject panel = CreatePanel(parent, "ShopPanel",
-                new Vector2(0.5f, 0.5f), new Vector2(1000, 1800));
-            panel.GetComponent<Image>().color = new Color(0.2f, 0.2f, 0.2f, 1f);
+                new Vector2(0.5f, 0.5f), new Vector2(900, 1000));
+            panel.GetComponent<Image>().color = new Color(0, 0, 0, 0); // Transparent
             panel.SetActive(false);
             
             CreateText(panel.transform, "Title", "SHOP",
@@ -369,7 +467,7 @@ namespace Jigupa.UI
             }
             
             // Setup and start the game
-            SimpleUISetup gameSetup = FindObjectOfType<SimpleUISetup>();
+            SimpleUISetup gameSetup = FindFirstObjectByType<SimpleUISetup>();
             if (!gameSetup)
             {
                 GameObject setupGO = new GameObject("GameSetup");
@@ -398,7 +496,7 @@ namespace Jigupa.UI
                 if (gameCanvas) Destroy(gameCanvas.gameObject);
                 
                 // Destroy game manager
-                GameStateManager gameManager = FindObjectOfType<GameStateManager>();
+                GameStateManager gameManager = FindFirstObjectByType<GameStateManager>();
                 if (gameManager) Destroy(gameManager.gameObject);
                 
                 // Show main menu again
@@ -410,7 +508,7 @@ namespace Jigupa.UI
                 else
                 {
                     // Recreate main menu if it was destroyed
-                    MainMenuUISetup menuSetup = FindObjectOfType<MainMenuUISetup>();
+                    MainMenuUISetup menuSetup = FindFirstObjectByType<MainMenuUISetup>();
                     if (!menuSetup)
                     {
                         GameObject setupGO = new GameObject("MenuSetup");
@@ -420,5 +518,50 @@ namespace Jigupa.UI
                 }
             });
         }
+        
+        private System.Collections.IEnumerator SetButtonTextDelayed(GameObject button, string text)
+        {
+            Debug.Log($"SetButtonTextDelayed started for text: '{text}'");
+            
+            // Wait one frame for components to initialize
+            yield return null;
+            
+            // Log all components
+            Debug.Log($"Button components: {string.Join(", ", button.GetComponents<Component>().Select(c => c.GetType().Name))}");
+            
+            // Try PrimaryButton component first
+            PrimaryButton primaryBtn = button.GetComponent<PrimaryButton>();
+            if (primaryBtn != null)
+            {
+                Debug.Log($"Found PrimaryButton component, calling SetText('{text}')");
+                primaryBtn.SetText(text);
+                
+                // Double check the text was set
+                yield return null;
+                TextMeshProUGUI checkText = button.GetComponentInChildren<TextMeshProUGUI>();
+                if (checkText != null)
+                {
+                    Debug.Log($"Text after SetText: '{checkText.text}'");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("PrimaryButton component not found!");
+                // Fallback: directly set TextMeshProUGUI
+                TextMeshProUGUI[] textComponents = button.GetComponentsInChildren<TextMeshProUGUI>();
+                Debug.Log($"Found {textComponents.Length} TextMeshProUGUI components");
+                if (textComponents.Length > 0)
+                {
+                    textComponents[0].text = text;
+                    Debug.Log($"Set button text via TextMeshProUGUI: '{text}' - Text is now: '{textComponents[0].text}'");
+                }
+                else
+                {
+                    Debug.LogWarning("Could not find text component to set button text");
+                }
+            }
+        }
+        
     }
+    
 }

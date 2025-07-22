@@ -5,29 +5,26 @@ Bold, vibrant, and energetic! Inspired by East Asian school environments where s
 
 ## Color Palette
 
-### Primary Colors - School Energy
-- **Hot Pink**: `#FF1E6F` - Electric energy, attack warnings
-- **School Blue**: `#0066FF` - Player color, school uniform inspired
-- **Sunset Orange**: `#FF6B35` - Opponent color, gymnasium lights
-- **Victory Gold**: `#FFD700` - Win states, trophy color
+### Core 5-Color System
+- **Primary Red**: `#AC0929` - Main brand color, buttons, key actions
+- **Light Red**: `#E63946` - Hover states, highlights, secondary actions
+- **Deep Blue**: `#1E3A5F` - Contrast elements, secondary actions, depth
+- **Ivory Cream**: `#F5F2E8` - Backgrounds, soft surfaces, warmth
+- **Pure White**: `#FFFFFF` - Text on dark backgrounds, clean surfaces
 
-### Environment Colors
-- **Hallway Green**: `#00C896` - School corridor walls
-- **Court Purple**: `#8B5CF6` - Basketball court accents
-- **Chalkboard**: `#1F2937` - Dark backgrounds
-- **Notebook White**: `#FAFAFA` - Clean backgrounds
+### Usage Guidelines
+- **Primary Red (#AC0929)**: Main CTAs, active states, selected menu items
+- **Light Red (#E63946)**: Hover effects, unselected menu items, emphasis
+- **Deep Blue (#1E3A5F)**: Success states, info elements, alternative actions
+- **Ivory Cream (#F5F2E8)**: Main background, creates warm atmosphere
+- **Pure White (#FFFFFF)**: Primary text on red/blue, cards, overlays
 
-### UI Colors
-- **Shadow Black**: `#000000` with opacity - Depth and shadows
-- **Neon Glow**: Various colors with blur - Button highlights
-- **Pastel Blue**: `#E0F2FE` - Soft backgrounds
-- **Pastel Pink**: `#FCE7F3` - Alternate backgrounds
-
-### Game-Specific Colors
-- **Player Zone**: `#0066FF` with gradients - Your side
-- **Opponent Zone**: `#FF6B35` with gradients - Their side
-- **Attack Flash**: `#FF1E6F` animated - Critical moments
-- **Defense Shield**: `#00C896` with glow - Defensive states
+### Color Relationships
+- Warm palette with red/cream base and blue accent
+- High contrast between deep blue and ivory cream
+- Red variations provide hierarchy
+- All colors maintain WCAG AA contrast
+- Use 80% opacity for disabled states
 
 ## Typography
 
@@ -243,10 +240,20 @@ Animation: Scale in (0.3s ease-out)
 ### CSS Variables
 ```css
 :root {
-  /* Colors */
-  --color-primary: #AC0929;
-  --color-primary-dark: #7A061D;
-  --color-primary-light: #D91F42;
+  /* Core 5-Color System */
+  --color-primary: #AC0929;        /* Primary Red */
+  --color-primary-light: #E63946;  /* Light Red */
+  --color-accent: #1E3A5F;         /* Deep Blue */
+  --color-background: #F5F2E8;     /* Ivory Cream */
+  --color-white: #FFFFFF;          /* Pure White */
+  
+  /* Semantic Colors */
+  --color-surface: var(--color-white);
+  --color-text-primary: var(--color-primary);
+  --color-text-secondary: var(--color-accent);
+  --color-success: var(--color-accent);
+  --color-warning: var(--color-primary-light);
+  --color-disabled: rgba(172, 9, 41, 0.4);
   
   /* Typography */
   --font-family: 'Lexend', -apple-system, sans-serif;
@@ -258,10 +265,10 @@ Animation: Scale in (0.3s ease-out)
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  /* Shadows - using primary color */
+  --shadow-sm: 0 2px 8px rgba(172, 9, 41, 0.1);
+  --shadow-md: 0 4px 16px rgba(172, 9, 41, 0.15);
+  --shadow-lg: 0 8px 32px rgba(172, 9, 41, 0.2);
 }
 ```
 
