@@ -50,6 +50,21 @@ public class PrimaryButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         UpdateButtonState();
     }
     
+    public void DisableBorder()
+    {
+        showBorder = false;
+        
+        // Remove existing border if found
+        Transform border = transform.Find("Border");
+        if (border != null)
+        {
+            if (Application.isPlaying)
+                Destroy(border.gameObject);
+            else
+                DestroyImmediate(border.gameObject);
+        }
+    }
+    
     private void Start()
     {
         // Start constant pulse animation

@@ -293,8 +293,6 @@ namespace Jigupa.UI
             panel.GetComponent<Image>().color = new Color(0, 0, 0, 0); // Transparent
             panel.SetActive(true); // Battle panel active by default
             
-            // No title needed - using button text instead
-            
             // Battle mode buttons - Use PrimaryButton prefab
             GameObject primaryButtonPrefab = PrefabLoader.LoadPrimaryButtonPrefab();
             Debug.Log($"PrimaryButton prefab loaded: {primaryButtonPrefab != null}");
@@ -311,26 +309,54 @@ namespace Jigupa.UI
                 rect.anchoredPosition = Vector2.zero;
                 rect.sizeDelta = new Vector2(400, 120); // Larger button
                 
-                // Immediately try to set text
-                TextMeshProUGUI immediateText = playBtn.GetComponentInChildren<TextMeshProUGUI>();
-                if (immediateText != null)
-                {
-                    immediateText.text = "BATTLE";
-                    Debug.Log($"Immediately set text to: '{immediateText.text}'");
-                }
-                
                 // Check components
                 PrimaryButton primaryBtn = playBtn.GetComponent<PrimaryButton>();
                 Image buttonImage = playBtn.GetComponent<Image>();
                 Debug.Log($"PrimaryButton component: {primaryBtn != null}, Image color: {buttonImage?.color}");
                 
-                // Also set button text after delay
-                StartCoroutine(SetButtonTextDelayed(playBtn, "BATTLE"));
+                // Set text using PrimaryButton component
+                if (primaryBtn != null)
+                {
+                    primaryBtn.SetText("BATTLE");
+                    primaryBtn.DisableBorder();
+                    Debug.Log("Set BATTLE text using PrimaryButton component");
+                }
+                else
+                {
+                    // Fallback: directly set text
+                    TextMeshProUGUI immediateText = playBtn.GetComponentInChildren<TextMeshProUGUI>();
+                    if (immediateText != null)
+                    {
+                        immediateText.text = "BATTLE";
+                        Debug.Log($"Fallback: set text to: '{immediateText.text}'");
+                    }
+                }
                 
-                // Button now uses text-based design with border
+                // Only use coroutine if in play mode
+                if (Application.isPlaying)
+                {
+                    StartCoroutine(SetButtonTextDelayed(playBtn, "BATTLE"));
+                }
                 
-                // Add the PlayJigupaButton component for scene loading
-                playBtn.AddComponent<PlayJigupaButton>();
+                // Check if PlayJigupaButton already exists (from prefab)
+                PlayJigupaButton existingPlayButton = playBtn.GetComponent<PlayJigupaButton>();
+                if (existingPlayButton == null)
+                {
+                    // Add the PlayJigupaButton component for scene loading
+                    playBtn.AddComponent<PlayJigupaButton>();
+                    Debug.Log("Added PlayJigupaButton component");
+                }
+                else
+                {
+                    Debug.Log("PlayJigupaButton component already exists on prefab");
+                }
+                
+                // Add component to manage fist icon
+                playBtn.AddComponent<BattleButtonFist>();
+                
+                // Create fist icon immediately in edit mode
+                CreateFistIconForButton(playBtn, panel.transform);
+                
                 Debug.Log("BATTLE button created with PrimaryButton prefab");
             }
             else
@@ -352,8 +378,67 @@ namespace Jigupa.UI
                 }
                 
                 playBtn.AddComponent<PlayJigupaButton>();
+                playBtn.AddComponent<BattleButtonFist>();
+                
+                // Create fist icon immediately in edit mode
+                CreateFistIconForButton(playBtn, panel.transform);
+                
                 Debug.LogWarning("PrimaryButton prefab not found, using fallback button creation");
             }
+        }
+        
+        private void CreateFistIconForButton(GameObject button, Transform parent)
+        {
+            // Create fist icon as sibling of button
+            GameObject fistIcon = new GameObject("FistIcon");
+            
+            RectTransform fistRect = fistIcon.AddComponent<RectTransform>();
+            fistIcon.transform.SetParent(parent, false);
+            
+            // Set transform properties AFTER parenting
+            fistRect.anchorMin = new Vector2(0.5f, 0.5f);
+            fistRect.anchorMax = new Vector2(0.5f, 0.5f);
+            fistRect.sizeDelta = new Vector2(80, 80);
+            fistRect.anchoredPosition = new Vector2(0, 120);
+            fistRect.localScale = Vector3.one;
+            
+            Image fistImage = fistIcon.AddComponent<Image>();
+            
+            // Load the fist icon
+            Sprite fistSprite = Resources.Load<Sprite>("Icons/fist");
+            if (fistSprite != null)
+            {
+                fistImage.sprite = fistSprite;
+                fistImage.preserveAspect = true;
+                Debug.Log("Fist icon created with sprite in edit mode");
+            }
+            else
+            {
+                // Try loading as Texture2D
+                Texture2D fistTexture = Resources.Load<Texture2D>("Icons/fist");
+                if (fistTexture != null)
+                {
+                    fistSprite = Sprite.Create(fistTexture, 
+                        new Rect(0, 0, fistTexture.width, fistTexture.height), 
+                        new Vector2(0.5f, 0.5f));
+                    fistImage.sprite = fistSprite;
+                    fistImage.preserveAspect = true;
+                    Debug.Log("Fist icon created with texture->sprite in edit mode");
+                }
+                else
+                {
+                    fistImage.color = Color.red;
+                    Debug.LogError("FIST ICON NOT FOUND IN RESOURCES!");
+                }
+            }
+            
+            // Add animation component
+            fistIcon.AddComponent<BattleFistIcon>();
+            
+            // Add debug component to track lifecycle
+            fistIcon.AddComponent<FistIconDebug>();
+            
+            Debug.Log($"Fist icon created at position {fistRect.anchoredPosition} with size {fistRect.sizeDelta}");
         }
         
         private void CreateShopPanel(Transform parent)
