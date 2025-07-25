@@ -8,6 +8,7 @@ namespace Jigupa.UI
         private static TMP_FontAsset _lexendBlack;
         private static TMP_FontAsset _lexendBold;
         private static TMP_FontAsset _lexendRegular;
+        private static TMP_FontAsset _lexendThin;
         
         public static TMP_FontAsset LexendBlack
         {
@@ -57,6 +58,22 @@ namespace Jigupa.UI
             }
         }
         
+        public static TMP_FontAsset LexendThin
+        {
+            get
+            {
+                if (_lexendThin == null)
+                {
+                    _lexendThin = Resources.Load<TMP_FontAsset>("Fonts/LexendDeca-Thin SDF");
+                    if (_lexendThin == null)
+                    {
+                        Debug.LogWarning("LexendDeca-Thin SDF font not found in Resources/Fonts/. Using default font.");
+                    }
+                }
+                return _lexendThin;
+            }
+        }
+        
         public static void ApplyLexendFont(TextMeshProUGUI text, FontWeight weight = FontWeight.Regular)
         {
             switch (weight)
@@ -69,6 +86,11 @@ namespace Jigupa.UI
                 case FontWeight.Bold:
                 case FontWeight.SemiBold:
                     if (LexendBold != null) text.font = LexendBold;
+                    break;
+                    
+                case FontWeight.Thin:
+                case FontWeight.ExtraLight:
+                    if (LexendThin != null) text.font = LexendThin;
                     break;
                     
                 default:

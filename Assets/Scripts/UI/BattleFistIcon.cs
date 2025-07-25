@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
-using TMPro;
 using System.Collections.Generic;
+using TMPro;
 
 namespace Jigupa.UI
 {
@@ -12,7 +12,7 @@ namespace Jigupa.UI
     {
         private Image fistImage;
         private Vector3 originalScale;
-        private Vector2 originalAnchoredPosition = new Vector2(0, 120); // Store original position
+        private Vector2 originalAnchoredPosition = new Vector2(0, 0); // Centered position
         private Color originalColor;
         private Button battleButton;
         private TextMeshProUGUI buttonText;
@@ -21,8 +21,13 @@ namespace Jigupa.UI
         
         [Header("Animation Settings")]
         [SerializeField] private float hoverScale = 1.1f;
-        [SerializeField] private float clickScale = 4.5f; // Much larger for dramatic punch
-        [SerializeField] private float animationDuration = 0.3f; // Faster punch
+        
+        [Header("Breathing Animation")]
+        [SerializeField] private float breathScale = 1.05f;
+        [SerializeField] private float breathSpeed = 1.5f;
+        private bool isBreathing = true;
+        [SerializeField] private float clickScale = 12f; // Grows to almost full screen width
+        [SerializeField] private float animationDuration = 0.25f; // Even faster punch
         [SerializeField] private AnimationCurve scaleCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
         
         [Header("Color Settings")]
@@ -35,7 +40,12 @@ namespace Jigupa.UI
         void Awake()
         {
             fistImage = GetComponent<Image>();
-            originalColor = fistImage.color;
+            if (fistImage != null)
+            {
+                originalColor = fistImage.color;
+                // Ensure the image is enabled
+                fistImage.enabled = true;
+            }
             
             // Also try to get the button reference early in Awake
             StartCoroutine(SetupButtonListenerDelayed());
@@ -43,47 +53,47 @@ namespace Jigupa.UI
         
         void Start()
         {
-            // Capture original scale and position after any setup
+            // Ensure image is visible
+            if (fistImage == null)
+            {
+                fistImage = GetComponent<Image>();
+            }
+            
+            if (fistImage != null)
+            {
+                fistImage.enabled = true;
+                // Capture color if not already set
+                if (originalColor.a == 0)
+                {
+                    originalColor = fistImage.color;
+                }
+            }
+            
+            // Capture original scale
             originalScale = transform.localScale;
+            
+            // Capture current position (don't override it)
             RectTransform rect = GetComponent<RectTransform>();
             if (rect != null)
             {
                 originalAnchoredPosition = rect.anchoredPosition;
             }
             
-            // Find the battle button (it's a sibling, not a child of parent)
-            Transform parent = transform.parent;
-            if (parent != null)
+            // Get the button component on this GameObject (fist is now the button)
+            battleButton = GetComponent<Button>();
+            if (battleButton != null)
             {
-                battleButton = parent.Find("PlayJigupaButton")?.GetComponent<Button>();
-                if (battleButton != null)
-                {
-                    battleButton.onClick.AddListener(OnBattleButtonClick);
-                    buttonText = battleButton.GetComponentInChildren<TextMeshProUGUI>();
-                    // Debug.Log($"BattleFistIcon: Found button: {battleButton.name}, text: {buttonText?.text}");
-                    
-                    // Log current listeners count for debugging
-                    // Debug.Log($"BattleFistIcon: Button now has {battleButton.onClick.GetPersistentEventCount()} persistent listeners");
-                }
-                else
-                {
-                    // Debug.LogWarning("BattleFistIcon: Could not find PlayJigupaButton");
-                    
-                    // Try to find button in different ways for debugging
-                    Button foundButton = parent.GetComponentInChildren<Button>();
-                    if (foundButton != null)
-                    {
-                        // Debug.Log($"BattleFistIcon: Found a button named: {foundButton.name}");
-                    }
-                    
-                    // Log all siblings for debugging
-                    // Debug.Log($"BattleFistIcon: Parent has {parent.childCount} children:");
-                    for (int i = 0; i < parent.childCount; i++)
-                    {
-                        // Debug.Log($"  - Child {i}: {parent.GetChild(i).name}");
-                    }
-                }
+                battleButton.onClick.AddListener(OnBattleButtonClick);
+                Debug.Log("BattleFistIcon: Fist is now directly clickable");
             }
+            else
+            {
+                Debug.LogWarning("BattleFistIcon: No Button component found on fist");
+            }
+            
+            // Start breathing animation
+            isBreathing = true;
+            StartCoroutine(StartBreathingDelayed());
         }
         
         private IEnumerator SetupButtonListenerDelayed()
@@ -94,15 +104,11 @@ namespace Jigupa.UI
             // Try to set up the button listener again if it wasn't found in Start
             if (battleButton == null)
             {
-                Transform parent = transform.parent;
-                if (parent != null)
+                battleButton = GetComponent<Button>();
+                if (battleButton != null)
                 {
-                    battleButton = parent.Find("PlayJigupaButton")?.GetComponent<Button>();
-                    if (battleButton != null)
-                    {
-                        battleButton.onClick.AddListener(OnBattleButtonClick);
-                        // Debug.Log($"BattleFistIcon: Setup button listener in coroutine for: {battleButton.name}");
-                    }
+                    battleButton.onClick.AddListener(OnBattleButtonClick);
+                    Debug.Log("BattleFistIcon: Setup button listener in coroutine");
                 }
             }
         }
@@ -113,25 +119,67 @@ namespace Jigupa.UI
             isAnimating = false;
             StopAllCoroutines();
             
-            // Reset transform but keep original anchored position
-            transform.localScale = originalScale;
-            GetComponent<RectTransform>().anchoredPosition = originalAnchoredPosition;
+            // Make sure we have the image component
+            if (fistImage == null)
+            {
+                fistImage = GetComponent<Image>();
+                if (fistImage != null && originalColor == Color.clear)
+                {
+                    originalColor = fistImage.color;
+                }
+            }
+            
+            // Reset transform - but only if we have valid original values
+            if (originalScale != Vector3.zero)
+            {
+                transform.localScale = originalScale;
+            }
+            else
+            {
+                // Capture current scale if not set
+                originalScale = transform.localScale;
+            }
+            
+            RectTransform rect = GetComponent<RectTransform>();
+            if (rect != null)
+            {
+                // Only reset position if we have a valid original position
+                if (originalAnchoredPosition != Vector2.zero || 
+                    (originalAnchoredPosition == Vector2.zero && !Application.isPlaying))
+                {
+                    rect.anchoredPosition = originalAnchoredPosition;
+                }
+                else
+                {
+                    // Capture current position
+                    originalAnchoredPosition = rect.anchoredPosition;
+                }
+            }
+            
             transform.rotation = Quaternion.identity;
             
-            // Reset color
+            // Reset color and ensure visibility
             if (fistImage != null)
             {
-                fistImage.color = originalColor;
+                // Make sure we have a valid original color
+                if (originalColor.a > 0)
+                {
+                    fistImage.color = originalColor;
+                }
+                else
+                {
+                    // Default to white with full alpha if color not set
+                    fistImage.color = Color.white;
+                    originalColor = Color.white;
+                }
+                fistImage.enabled = true; // Ensure it's visible
             }
             
-            // Reset text visibility when returning to menu
-            if (buttonText != null)
-            {
-                buttonText.enabled = true;
-            }
+            // Clean up removed - explosion effects no longer used
             
-            // Clean up any leftover fragments
-            CleanupFragments();
+            // Start breathing animation after delay
+            isBreathing = true;
+            StartCoroutine(StartBreathingDelayed());
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -140,8 +188,10 @@ namespace Jigupa.UI
             
             if (!isAnimating)
             {
+                // Don't stop breathing, just overlay hover effect
                 StopCurrentAnimation();
                 currentAnimation = StartCoroutine(AnimateHover());
+                
             }
         }
 
@@ -153,17 +203,21 @@ namespace Jigupa.UI
             {
                 StopCurrentAnimation();
                 currentAnimation = StartCoroutine(AnimateToOriginal());
+                // Breathing continues automatically
+                
             }
         }
 
         private void OnBattleButtonClick()
         {
-            // Debug.Log($"[FIST ANIMATION] OnBattleButtonClick called! isAnimating: {isAnimating}");
+            Debug.Log($"[FIST ANIMATION] OnBattleButtonClick called! isAnimating: {isAnimating}");
             
             if (!isAnimating)
             {
+                isBreathing = false;
                 StopCurrentAnimation();
                 currentAnimation = StartCoroutine(AnimatePunch());
+                
             }
             else
             {
@@ -183,29 +237,27 @@ namespace Jigupa.UI
         private IEnumerator AnimateHover()
         {
             float elapsed = 0;
-            Vector3 startScale = transform.localScale;
+            Vector3 startScale = transform.localScale; // Start from current breathing scale
             Color startColor = fistImage.color;
-            Vector3 targetScale = originalScale * hoverScale;
+            Vector3 baseScale = originalScale * hoverScale;
 
             while (elapsed < 0.2f)
             {
                 elapsed += Time.deltaTime;
                 float t = elapsed / 0.2f;
                 
-                transform.localScale = Vector3.Lerp(startScale, targetScale, t);
+                // Smoothly transition to hover color
                 fistImage.color = Color.Lerp(startColor, hoverColor, t);
                 
                 yield return null;
             }
 
-            transform.localScale = targetScale;
             fistImage.color = hoverColor;
         }
 
         private IEnumerator AnimateToOriginal()
         {
             float elapsed = 0;
-            Vector3 startScale = transform.localScale;
             Color startColor = fistImage.color;
 
             while (elapsed < 0.2f)
@@ -213,49 +265,50 @@ namespace Jigupa.UI
                 elapsed += Time.deltaTime;
                 float t = elapsed / 0.2f;
                 
-                transform.localScale = Vector3.Lerp(startScale, originalScale, t);
+                // Only animate color back, let breathing handle scale
                 fistImage.color = Color.Lerp(startColor, originalColor, t);
                 
                 yield return null;
             }
 
-            transform.localScale = originalScale;
             fistImage.color = originalColor;
         }
 
         private IEnumerator AnimatePunch()
         {
-            // Debug.Log("[FIST ANIMATION] AnimatePunch started!");
+            Debug.Log("[FIST ANIMATION] AnimatePunch started!");
             isAnimating = true;
+            
+            // First hide all UI except the fist
+            yield return StartCoroutine(HideAllUIExceptFist());
             
             // Get rect transform for position manipulation
             RectTransform rectTransform = GetComponent<RectTransform>();
             
-            // Don't reset position - keep it where it is
-            transform.localScale = originalScale;
-            transform.rotation = Quaternion.identity;
-            fistImage.color = originalColor;
+            // Start from current state - no reset needed
+            Vector3 currentScale = transform.localScale;
+            Vector2 currentPosition = rectTransform.anchoredPosition;
+            Color currentColor = fistImage.color;
             
-            // Debug.Log($"[FIST ANIMATION] Starting from position: {rectTransform.anchoredPosition}");
-            
-            yield return null; // Wait a frame
+            yield return new WaitForSeconds(0.1f); // Shorter pause after UI hides
             
             float elapsed = 0;
-            Vector3 startScale = transform.localScale;
-            Vector2 startPosition = originalAnchoredPosition; // Use stored original position
-            Color startColor = fistImage.color;
+            Vector3 startScale = currentScale; // Use current scale instead of original
+            Vector2 startPosition = currentPosition; // Use current position
+            Color startColor = currentColor; // Use current color
             Vector3 targetScale = originalScale * clickScale;
             
-            // Quick pull back first (wind up)
-            float windupDuration = 0.1f;
+            // Quick pull back first (wind up) - from current scale
+            float windupDuration = 0.08f; // Slightly faster windup
+            Vector3 windupScale = startScale * 0.9f; // Less dramatic pullback
             while (elapsed < windupDuration)
             {
                 elapsed += Time.deltaTime;
                 float t = elapsed / windupDuration;
                 
-                // Pull back slightly
-                transform.localScale = Vector3.Lerp(startScale, originalScale * 0.8f, t);
-                rectTransform.anchoredPosition = startPosition + Vector2.up * 20f * t;
+                // Pull back slightly from current scale
+                transform.localScale = Vector3.Lerp(startScale, windupScale, t);
+                rectTransform.anchoredPosition = startPosition + Vector2.up * 15f * t; // Less movement
                 
                 yield return null;
             }
@@ -265,7 +318,7 @@ namespace Jigupa.UI
             Vector3 punchStartScale = transform.localScale;
             Vector2 punchStartPos = rectTransform.anchoredPosition;
             
-            // Animate punch forward - fast and dramatic
+            // Animate punch forward - fast and dramatic with fade out
             while (elapsed < animationDuration)
             {
                 elapsed += Time.deltaTime;
@@ -277,39 +330,43 @@ namespace Jigupa.UI
                 // Move forward and down as if coming at the viewer
                 rectTransform.anchoredPosition = Vector2.Lerp(punchStartPos, startPosition + Vector2.down * 80f, t);
                 
-                // Color gets more intense
-                fistImage.color = Color.Lerp(startColor, clickColor, t);
+                // Fade out as it gets larger - maintaining current color tone
+                Color fadeColor = startColor;
+                fadeColor.a = Mathf.Lerp(startColor.a, 0f, t); // Fade from current alpha to transparent
+                fistImage.color = fadeColor;
                 
                 // Add slight rotation for dramatic effect
                 transform.rotation = Quaternion.Euler(0, 0, Mathf.Sin(t * Mathf.PI) * -15f);
                 
                 yield return null;
             }
-
+            
+            // Fist is now fully faded out
             transform.localScale = targetScale;
             rectTransform.anchoredPosition = startPosition + Vector2.down * 80f;
-            fistImage.color = clickColor;
+            fistImage.color = new Color(clickColor.r, clickColor.g, clickColor.b, 0f);
             
-            // Explode text when fist hits with a slight delay for impact
-            if (buttonText != null)
+            // Brief pause before scene transition
+            yield return new WaitForSeconds(0.2f);
+            
+            // Trigger scene transition (no black fade needed)
+            // PlayJigupaButton is on the same GameObject as the fist
+            PlayJigupaButton playButton = GetComponent<PlayJigupaButton>();
+            if (playButton != null)
             {
-                yield return new WaitForSeconds(0.05f); // Small delay for impact feel
-                ExplodeText();
-                
-                // Add screen shake effect
-                StartCoroutine(ScreenShake());
-                
-                // Flash the screen
-                StartCoroutine(ScreenFlash());
+                playButton.LoadBattleScene();
+            }
+            else
+            {
+                Debug.LogWarning("PlayJigupaButton not found on fist icon");
             }
             
-            // Hold at maximum size
-            yield return new WaitForSeconds(0.3f); // Longer hold for more dramatic effect
-            
-            // Reset after scene transition starts
+            // Reset animation state
             isAnimating = false;
         }
 
+        // Explosion methods removed - no longer used
+        /*
         private void ExplodeText()
         {
             if (buttonText == null)
@@ -470,8 +527,6 @@ namespace Jigupa.UI
             {
                 battleButton.onClick.RemoveListener(OnBattleButtonClick);
             }
-            
-            CleanupFragments();
         }
         
         private IEnumerator ScreenShake()
@@ -671,5 +726,108 @@ namespace Jigupa.UI
             
             Destroy(flash);
         }
+        */
+        
+        private IEnumerator StartBreathingDelayed()
+        {
+            // Wait a few frames to ensure button text is ready
+            yield return new WaitForSeconds(0.1f);
+            StartCoroutine(BreathingAnimation());
+        }
+        
+        private IEnumerator BreathingAnimation()
+        {
+            while (isBreathing)
+            {
+                // Breathe in
+                float elapsed = 0;
+                float breathDuration = 1f / breathSpeed;
+                Vector3 startScale = transform.localScale;
+                Vector3 targetScale = originalScale * breathScale;
+                
+                while (elapsed < breathDuration && isBreathing)
+                {
+                    elapsed += Time.deltaTime;
+                    float t = elapsed / breathDuration;
+                    // Use sin curve for smooth breathing
+                    float smoothT = Mathf.Sin(t * Mathf.PI * 0.5f);
+                    transform.localScale = Vector3.Lerp(startScale, targetScale, smoothT);
+                    yield return null;
+                }
+                
+                // Breathe out
+                elapsed = 0;
+                startScale = transform.localScale;
+                
+                while (elapsed < breathDuration && isBreathing)
+                {
+                    elapsed += Time.deltaTime;
+                    float t = elapsed / breathDuration;
+                    // Use sin curve for smooth breathing
+                    float smoothT = Mathf.Sin(t * Mathf.PI * 0.5f);
+                    transform.localScale = Vector3.Lerp(startScale, originalScale, smoothT);
+                    yield return null;
+                }
+                
+                yield return null;
+            }
+        }
+        
+        private IEnumerator HideAllUIExceptFist()
+        {
+            Canvas canvas = GetComponentInParent<Canvas>();
+            if (canvas == null) yield break;
+            
+            // Find all UI elements
+            Image[] allImages = canvas.GetComponentsInChildren<Image>();
+            TextMeshProUGUI[] allTexts = canvas.GetComponentsInChildren<TextMeshProUGUI>();
+            
+            // Fade out all images except fist and background
+            foreach (var img in allImages)
+            {
+                // Skip fist image, self, and background
+                bool isBackground = img.gameObject.name == "Background" || 
+                                  img.color.r > 0.9f && img.color.g > 0.9f && img.color.b > 0.85f; // Ivory color check
+                
+                if (img != fistImage && img.gameObject != gameObject && !isBackground)
+                {
+                    StartCoroutine(FadeGraphic(img, 0f, 0.3f));
+                }
+            }
+            
+            // Fade out all texts
+            foreach (var text in allTexts)
+            {
+                StartCoroutine(FadeGraphic(text, 0f, 0.3f));
+            }
+            
+            yield return new WaitForSeconds(0.3f);
+        }
+        
+        private IEnumerator FadeGraphic(Graphic graphic, float targetAlpha, float duration)
+        {
+            if (graphic == null) yield break;
+            
+            Color startColor = graphic.color;
+            float startAlpha = startColor.a;
+            float elapsed = 0;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                
+                Color newColor = startColor;
+                newColor.a = Mathf.Lerp(startAlpha, targetAlpha, t);
+                graphic.color = newColor;
+                
+                yield return null;
+            }
+            
+            Color finalColor = startColor;
+            finalColor.a = targetAlpha;
+            graphic.color = finalColor;
+        }
+        
     }
 }

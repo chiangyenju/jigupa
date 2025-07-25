@@ -5,24 +5,27 @@ using Jigupa.UI;
 
 namespace Jigupa.Editor
 {
+    /// <summary>
+    /// Helper tools for setting up and managing Jigupa scenes in the Unity Editor
+    /// </summary>
     public class SceneSetupHelper : EditorWindow
     {
         // ===== Initial Setup =====
+        /// <summary>
+        /// One-click setup for the entire project. Configures build settings and creates UI.
+        /// </summary>
         [MenuItem("Jigupa/Initial Setup/Setup All Scenes", priority = 1)]
         public static void SetupAllScenes()
         {
-            // Setup Build Settings
-            var scenes = new EditorBuildSettingsScene[]
+            // Check if we're in play mode
+            if (EditorApplication.isPlaying)
             {
-                new EditorBuildSettingsScene("Assets/Scenes/MainMenu.unity", true),
-                new EditorBuildSettingsScene("Assets/Scenes/Battle.unity", true)
-            };
+                Debug.LogError("Cannot setup scenes during play mode. Please exit play mode and try again.");
+                return;
+            }
             
-            EditorBuildSettings.scenes = scenes;
-            
-            Debug.Log("Build settings configured:");
-            Debug.Log("- MainMenu (index 0) - Default starting scene");
-            Debug.Log("- Battle (index 1)");
+            // Configure build settings with proper scene order
+            ConfigureBuildSettings();
             
             // Open MainMenu as the default working scene
             EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity");
@@ -31,29 +34,64 @@ namespace Jigupa.Editor
             SetupMainMenuUI();
         }
         
+        private static void ConfigureBuildSettings()
+        {
+            var scenes = new EditorBuildSettingsScene[]
+            {
+                new EditorBuildSettingsScene("Assets/Scenes/MainMenu.unity", true),
+                new EditorBuildSettingsScene("Assets/Scenes/Battle.unity", true)
+            };
+            
+            EditorBuildSettings.scenes = scenes;
+        }
+        
         // ===== Scene Navigation =====
+        /// <summary>
+        /// Quick navigation to MainMenu scene
+        /// </summary>
         [MenuItem("Jigupa/Scenes/Open MainMenu", priority = 20)]
         public static void OpenMainMenu()
         {
+            if (EditorApplication.isPlaying)
+            {
+                Debug.LogError("Cannot open scenes during play mode. Please exit play mode and try again.");
+                return;
+            }
+            
             EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
             EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity");
         }
         
+        /// <summary>
+        /// Quick navigation to Battle scene
+        /// </summary>
         [MenuItem("Jigupa/Scenes/Open Battle Scene", priority = 21)]
         public static void OpenBattleScene()
         {
+            if (EditorApplication.isPlaying)
+            {
+                Debug.LogError("Cannot open scenes during play mode. Please exit play mode and try again.");
+                return;
+            }
+            
             EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
             EditorSceneManager.OpenScene("Assets/Scenes/Battle.unity");
         }
         
         // ===== Testing =====
+        /// <summary>
+        /// Starts play mode from MainMenu to test the full game flow
+        /// </summary>
         [MenuItem("Jigupa/Testing/Test Game Flow", priority = 40)]
         public static void TestGameFlow()
         {
-            // Save current scene
-            EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
+            if (EditorApplication.isPlaying)
+            {
+                Debug.LogError("Already in play mode!");
+                return;
+            }
             
-            // Open MainMenu and play
+            EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
             EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity");
             EditorApplication.EnterPlaymode();
         }
@@ -78,69 +116,55 @@ namespace Jigupa.Editor
             // Run the setup
             menuSetup.SetupMainMenu();
             
-            // Delay cleanup to ensure all coroutines complete
+            // Clean up temporary setup object
             if (wasCreated && Application.isPlaying == false)
             {
-                // Use EditorApplication.delayCall to destroy after current frame
                 EditorApplication.delayCall += () => {
                     if (menuSetup != null && menuSetup.gameObject != null)
                     {
                         Object.DestroyImmediate(menuSetup.gameObject);
-                        Debug.Log("Cleaned up MainMenuUISetup object after setup completed");
                     }
                 };
             }
             
-            // Mark scene as dirty to save changes
-            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-            
             // Save the scene
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
-            
-            Debug.Log("MainMenu UI has been configured and saved!");
         }
         
+        /// <summary>
+        /// Ensures the fist icon is properly imported as a sprite for UI use
+        /// </summary>
         private static void EnsureFistIconIsSprite()
         {
             string fistIconPath = "Assets/Resources/Icons/fist.png";
-            
-            // Force refresh first
-            AssetDatabase.ImportAsset(fistIconPath, ImportAssetOptions.ForceUpdate);
             
             TextureImporter importer = AssetImporter.GetAtPath(fistIconPath) as TextureImporter;
             
             if (importer != null)
             {
-                // Force sprite settings
-                importer.textureType = TextureImporterType.Sprite;
-                importer.spriteImportMode = SpriteImportMode.Single;
-                importer.spritePixelsPerUnit = 100;
-                importer.spritePivot = new Vector2(0.5f, 0.5f);
-                importer.sRGBTexture = true;
-                importer.alphaIsTransparency = true;
-                importer.alphaSource = TextureImporterAlphaSource.FromInput;
-                importer.mipmapEnabled = false;
+                // Configure as UI sprite
+                bool needsReimport = false;
                 
-                // Force reimport
-                EditorUtility.SetDirty(importer);
-                importer.SaveAndReimport();
+                if (importer.textureType != TextureImporterType.Sprite)
+                {
+                    importer.textureType = TextureImporterType.Sprite;
+                    needsReimport = true;
+                }
                 
-                Debug.Log("Fist icon import settings applied");
-                
-                // Wait for import to complete
-                AssetDatabase.Refresh();
-                System.Threading.Thread.Sleep(100);
-                
-                // Verify the sprite can be loaded
-                Sprite testSprite = Resources.Load<Sprite>("Icons/fist");
-                Texture2D testTexture = Resources.Load<Texture2D>("Icons/fist");
-                
-                Debug.Log($"Sprite load test: {testSprite != null} (name: {testSprite?.name})");
-                Debug.Log($"Texture load test: {testTexture != null} (name: {testTexture?.name})");
-            }
-            else
-            {
-                Debug.LogError($"✗ Could not find fist.png at: {fistIconPath}");
+                if (needsReimport)
+                {
+                    importer.spriteImportMode = SpriteImportMode.Single;
+                    importer.spritePixelsPerUnit = 100;
+                    importer.spritePivot = new Vector2(0.5f, 0.5f);
+                    importer.sRGBTexture = true;
+                    importer.alphaIsTransparency = true;
+                    importer.alphaSource = TextureImporterAlphaSource.FromInput;
+                    importer.mipmapEnabled = false;
+                    
+                    EditorUtility.SetDirty(importer);
+                    importer.SaveAndReimport();
+                }
             }
         }
     }

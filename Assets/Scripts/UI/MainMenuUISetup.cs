@@ -145,7 +145,7 @@ namespace Jigupa.UI
             menuRect.anchorMin = new Vector2(1f, 0f);
             menuRect.anchorMax = new Vector2(1f, 0f);
             menuRect.pivot = new Vector2(1f, 0f);
-            menuRect.anchoredPosition = new Vector2(-50, 100); // 50 pixels from right, 100 from bottom
+            menuRect.anchoredPosition = new Vector2(-120, 200); // 120 pixels from right, 200 from bottom
             
             // We'll handle masking differently to avoid hiding the menu
             
@@ -156,7 +156,7 @@ namespace Jigupa.UI
             
             // Menu items - new order: Battle, Player, Guild, Shop (top to bottom)
             string[] menuItems = { "BATTLE", "PLAYER", "GUILD", "SHOP" };
-            float spacing = 80f; // Vertical spacing
+            float spacing = 100f; // Vertical spacing
             float startY = 150f; // Start from top
             
             Button[] buttons = new Button[menuItems.Length];
@@ -171,29 +171,30 @@ namespace Jigupa.UI
                 rect.anchorMax = new Vector2(1f, 0.5f);
                 rect.pivot = new Vector2(1f, 0.5f); // Right pivot
                 rect.anchoredPosition = new Vector2(-20, startY - i * spacing); // 20 pixels from right edge
-                rect.sizeDelta = new Vector2(250, 80); // Size for text
+                rect.sizeDelta = new Vector2(300, 80); // Wider to prevent text wrapping
                 
                 // Add button component
                 Button btn = menuItem.AddComponent<Button>();
                 buttons[i] = btn;
                 
-                // Add text with Lexend 900 weight
+                // Add text with Lexend Black font
                 TextMeshProUGUI text = menuItem.AddComponent<TextMeshProUGUI>();
                 text.text = menuItems[i];
-                text.fontSize = 60; // Size 60 as requested
+                text.fontSize = 72; // Increased from 60
                 text.alignment = TextAlignmentOptions.Right;
-                text.fontWeight = TMPro.FontWeight.Black; // 900 weight
+                text.fontWeight = TMPro.FontWeight.Black; // 900 weight for all items
                 text.characterSpacing = -15; // Much tighter spacing for bold text
+                text.overflowMode = TextOverflowModes.Overflow; // Prevent text wrapping
                 
-                // Apply Lexend font if available
+                // Apply Lexend Black font
                 FontManager.ApplyLexendFont(text, TMPro.FontWeight.Black);
                 
                 // Set initial color - Battle (index 0) is selected by default
-                if (i == 0) // Battle is now at index 0
+                if (i == 0) // Battle is selected
                 {
                     text.color = new Color(0.674f, 0.035f, 0.161f, 1f); // #ac0929 - Primary red
                 }
-                else
+                else // Unselected items
                 {
                     text.color = new Color(0.902f, 0.224f, 0.275f, 1f); // #e63946 - Light red
                 }
@@ -293,98 +294,68 @@ namespace Jigupa.UI
             panel.GetComponent<Image>().color = new Color(0, 0, 0, 0); // Transparent
             panel.SetActive(true); // Battle panel active by default
             
-            // Battle mode buttons - Use PrimaryButton prefab
-            GameObject primaryButtonPrefab = PrefabLoader.LoadPrimaryButtonPrefab();
-            Debug.Log($"PrimaryButton prefab loaded: {primaryButtonPrefab != null}");
+            // Create clickable fist icon directly (no button)
+            CreateClickableFist(panel.transform);
+        }
+        
+        private void CreateClickableFist(Transform parent)
+        {
+            // Create the fist icon
+            GameObject fistIcon = new GameObject("FistIcon");
+            fistIcon.transform.SetParent(parent, false);
             
-            if (primaryButtonPrefab != null)
+            RectTransform fistRect = fistIcon.AddComponent<RectTransform>();
+            fistRect.anchorMin = new Vector2(0.5f, 0.5f);
+            fistRect.anchorMax = new Vector2(0.5f, 0.5f);
+            fistRect.sizeDelta = new Vector2(200, 200); // Large fist
+            fistRect.anchoredPosition = new Vector2(0, 0); // Centered
+            
+            // Add image component
+            Image fistImage = fistIcon.AddComponent<Image>();
+            
+            // Load the fist sprite
+            Sprite fistSprite = Resources.Load<Sprite>("Icons/fist");
+            if (fistSprite != null)
             {
-                GameObject playBtn = GameObject.Instantiate(primaryButtonPrefab, panel.transform);
-                playBtn.name = "PlayJigupaButton";
-                
-                // Position and size the button - centered in panel
-                RectTransform rect = playBtn.GetComponent<RectTransform>();
-                rect.anchorMin = new Vector2(0.5f, 0.5f);
-                rect.anchorMax = new Vector2(0.5f, 0.5f);
-                rect.anchoredPosition = Vector2.zero;
-                rect.sizeDelta = new Vector2(400, 120); // Larger button
-                
-                // Check components
-                PrimaryButton primaryBtn = playBtn.GetComponent<PrimaryButton>();
-                Image buttonImage = playBtn.GetComponent<Image>();
-                Debug.Log($"PrimaryButton component: {primaryBtn != null}, Image color: {buttonImage?.color}");
-                
-                // Set text using PrimaryButton component
-                if (primaryBtn != null)
-                {
-                    primaryBtn.SetText("BATTLE");
-                    primaryBtn.DisableBorder();
-                    Debug.Log("Set BATTLE text using PrimaryButton component");
-                }
-                else
-                {
-                    // Fallback: directly set text
-                    TextMeshProUGUI immediateText = playBtn.GetComponentInChildren<TextMeshProUGUI>();
-                    if (immediateText != null)
-                    {
-                        immediateText.text = "BATTLE";
-                        Debug.Log($"Fallback: set text to: '{immediateText.text}'");
-                    }
-                }
-                
-                // Only use coroutine if in play mode
-                if (Application.isPlaying)
-                {
-                    StartCoroutine(SetButtonTextDelayed(playBtn, "BATTLE"));
-                }
-                
-                // Check if PlayJigupaButton already exists (from prefab)
-                PlayJigupaButton existingPlayButton = playBtn.GetComponent<PlayJigupaButton>();
-                if (existingPlayButton == null)
-                {
-                    // Add the PlayJigupaButton component for scene loading
-                    playBtn.AddComponent<PlayJigupaButton>();
-                    Debug.Log("Added PlayJigupaButton component");
-                }
-                else
-                {
-                    Debug.Log("PlayJigupaButton component already exists on prefab");
-                }
-                
-                // Add component to manage fist icon
-                playBtn.AddComponent<BattleButtonFist>();
-                
-                // Create fist icon immediately in edit mode
-                CreateFistIconForButton(playBtn, panel.transform);
-                
-                Debug.Log("BATTLE button created with PrimaryButton prefab");
+                fistImage.sprite = fistSprite;
+                fistImage.preserveAspect = true;
+                fistImage.color = Color.white; // Ensure full visibility
             }
             else
             {
-                // Fallback to old method if prefab not found
-                GameObject playBtn = CreateButton(panel.transform, "PlayJigupaButton", "BATTLE",
-                    new Vector2(0.5f, 0.5f), new Vector2(400, 120));
-                Image btnImage = playBtn.GetComponent<Image>();
-                btnImage.color = new Color(0.674f, 0.035f, 0.161f, 1f); // #ac0929
-                
-                // Style the button text
-                TextMeshProUGUI btnText = playBtn.GetComponentInChildren<TextMeshProUGUI>();
-                if (btnText != null)
+                // Try loading as Texture2D
+                Texture2D fistTexture = Resources.Load<Texture2D>("Icons/fist");
+                if (fistTexture != null)
                 {
-                    btnText.fontSize = 48;
-                    btnText.fontWeight = TMPro.FontWeight.Black;
-                    btnText.characterSpacing = -10;
-                    FontManager.ApplyLexendFont(btnText, TMPro.FontWeight.Black);
+                    fistSprite = Sprite.Create(fistTexture, 
+                        new Rect(0, 0, fistTexture.width, fistTexture.height), 
+                        new Vector2(0.5f, 0.5f));
+                    fistImage.sprite = fistSprite;
+                    fistImage.preserveAspect = true;
+                    fistImage.color = Color.white; // Ensure full visibility
                 }
-                
-                playBtn.AddComponent<PlayJigupaButton>();
-                playBtn.AddComponent<BattleButtonFist>();
-                
-                // Create fist icon immediately in edit mode
-                CreateFistIconForButton(playBtn, panel.transform);
-                
-                Debug.LogWarning("PrimaryButton prefab not found, using fallback button creation");
+                else
+                {
+                    fistImage.color = Color.red; // Fallback color
+                    Debug.LogError("Fist icon not found in Resources/Icons/");
+                }
             }
+            
+            // Ensure the image is enabled
+            fistImage.enabled = true;
+            
+            // Make it clickable with Button component
+            Button fistButton = fistIcon.AddComponent<Button>();
+            fistButton.transition = Button.Transition.None; // No default transitions
+            
+            // Add PlayJigupaButton for scene loading
+            fistIcon.AddComponent<PlayJigupaButton>();
+            
+            // Add BattleFistIcon for animations - this must be added last
+            // to ensure other components are already set up
+            BattleFistIcon battleFist = fistIcon.AddComponent<BattleFistIcon>();
+            
+            Debug.Log($"Created clickable fist icon - Image enabled: {fistImage.enabled}, Color: {fistImage.color}");
         }
         
         private void CreateFistIconForButton(GameObject button, Transform parent)
@@ -398,8 +369,8 @@ namespace Jigupa.UI
             // Set transform properties AFTER parenting
             fistRect.anchorMin = new Vector2(0.5f, 0.5f);
             fistRect.anchorMax = new Vector2(0.5f, 0.5f);
-            fistRect.sizeDelta = new Vector2(80, 80);
-            fistRect.anchoredPosition = new Vector2(0, 120);
+            fistRect.sizeDelta = new Vector2(200, 200); // Much larger fist
+            fistRect.anchoredPosition = new Vector2(0, 150); // Position above button
             fistRect.localScale = Vector3.one;
             
             Image fistImage = fistIcon.AddComponent<Image>();
@@ -604,48 +575,6 @@ namespace Jigupa.UI
             });
         }
         
-        private System.Collections.IEnumerator SetButtonTextDelayed(GameObject button, string text)
-        {
-            Debug.Log($"SetButtonTextDelayed started for text: '{text}'");
-            
-            // Wait one frame for components to initialize
-            yield return null;
-            
-            // Log all components
-            Debug.Log($"Button components: {string.Join(", ", button.GetComponents<Component>().Select(c => c.GetType().Name))}");
-            
-            // Try PrimaryButton component first
-            PrimaryButton primaryBtn = button.GetComponent<PrimaryButton>();
-            if (primaryBtn != null)
-            {
-                Debug.Log($"Found PrimaryButton component, calling SetText('{text}')");
-                primaryBtn.SetText(text);
-                
-                // Double check the text was set
-                yield return null;
-                TextMeshProUGUI checkText = button.GetComponentInChildren<TextMeshProUGUI>();
-                if (checkText != null)
-                {
-                    Debug.Log($"Text after SetText: '{checkText.text}'");
-                }
-            }
-            else
-            {
-                Debug.LogWarning("PrimaryButton component not found!");
-                // Fallback: directly set TextMeshProUGUI
-                TextMeshProUGUI[] textComponents = button.GetComponentsInChildren<TextMeshProUGUI>();
-                Debug.Log($"Found {textComponents.Length} TextMeshProUGUI components");
-                if (textComponents.Length > 0)
-                {
-                    textComponents[0].text = text;
-                    Debug.Log($"Set button text via TextMeshProUGUI: '{text}' - Text is now: '{textComponents[0].text}'");
-                }
-                else
-                {
-                    Debug.LogWarning("Could not find text component to set button text");
-                }
-            }
-        }
         
     }
     
